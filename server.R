@@ -6,8 +6,11 @@ options(shiny.maxRequestSize=30*1024^2)
 shinyServer(function(input, output,session) {
   # creates a dynamic variable for the excel file's data which is reparsed when submit is pressed, it is then used in following calculations 
   observeEvent(input$submit, {
+  path <<- input$datainput
   filea <<- parseFile(input$datainput,input$filetype,headerstate = input$checkboxes)
   })
+  
+  
   #parse data file into list of lists depending on deliminator, strings are NOT converted to ints
   parseFile <- function(datafile,delim,headerstate){
     #cannot directly access a file, must first find it's file path
@@ -29,15 +32,17 @@ shinyServer(function(input, output,session) {
    output$data <- renderUI({ 
       input$submit
       tagList(
-        isolate(selectInput("donors", label = "Select Donor:", choices  = unique(filea[1]), selected = "Including")),
-        isolate(selectInput("stimulus", label = "Select Stimulus:", choices  = unique(filea[5]), selected = "Including")),
-        isolate(selectInput("timepoint", label = "Select Timepoint:", choices  = unique(filea[7]), selected = "Including"))
+        isolate(selectInput("donors", label = "Select Donor:", choices  = unique(filea[1]))),
+        isolate(selectInput("stimulus", label = "Select Stimulus:", choices  = unique(filea[5]))),
+        isolate(selectInput("timepoint", label = "Select Timepoint:", choices  = unique(filea[7])))
       )
    })
   output$plot1 <- renderPlot({ 
     input$submit
-    isolate(
-    plot(filea[c(1,50),1],filea[c(1,50),2])
-    )
+    #when donor, stimuls, and time point are selected and submit is hit, the data is extracted from the spreadsheet
+    isolate(genes <- subset(filea,Donor == input$donors & StimulusName == input$stimulus & Timepoint == input$timepoint))
+   # isolate(print((genes[c(58,60)])))
+    isolate(plot(t(genes[58:68]),xaxt="n"))
+    isolate(axis(1,at=1:11,labels=names(genes[c(58:68)])))
   })
 })
