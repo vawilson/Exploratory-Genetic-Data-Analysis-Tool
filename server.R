@@ -32,9 +32,29 @@ shinyServer(function(input, output,session) {
    output$data <- renderUI({ 
       input$submit
       tagList(
-        isolate(selectInput("donors", label = "Select Donor:", choices  = unique(filea[1]))),
-        isolate(selectInput("stimulus", label = "Select Stimulus:", choices  = unique(filea[5]))),
-        isolate(selectInput("timepoint", label = "Select Timepoint:", choices  = unique(filea[7])))
+        isolate(
+          selectizeInput("donor",label = "Select Donor:", choices = unique(filea[1]),
+          multiple = TRUE, options = list()
+          )
+        ),
+        isolate(
+          selectizeInput("stimulus", label = "Select Stimulus:", choices  = unique(filea[5]),
+          multiple = TRUE, options = list()
+          )
+        ),
+        isolate(
+          selectizeInput("timepoint", label = "Select Timepoint:", choices  = unique(filea[7]),
+          multiple = TRUE, options = list()
+          )
+        ),
+      isolate(
+        selectizeInput("genes", label = "Select Genes:", choices  = unique(names(filea[58:644])),
+        multiple = TRUE, options = list()
+        )
+      ),
+      isolate(
+        selectInput("dimension",label = "Select Dimension to View:", choices = c("2D","3D"))
+        )
       )
    })
   output$plot1 <- renderPlot({ 
