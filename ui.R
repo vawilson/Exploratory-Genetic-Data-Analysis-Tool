@@ -11,7 +11,7 @@ shinyUI(fluidPage(
       uiOutput("data3"),
       actionButton("submit" ,"Submit",class = "btn btn-primary")),
   mainPanel(
-    plotOutput("plot1", click = "plot_click")
+  plotlyOutput("plot1")
   )
   )
 ))

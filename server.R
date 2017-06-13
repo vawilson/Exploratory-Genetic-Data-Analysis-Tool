@@ -33,36 +33,50 @@ shinyServer(function(input, output,session) {
       input$submit
       tagList(
         isolate(
-          selectizeInput("donor",label = "Select Donor:", choices = unique(filea[1]),
+          selectizeInput("donor",label = "Select Donor:", choices = unique(filea[1]), selected = as.character(unique(filea[1])$Donor),
           multiple = TRUE, options = list()
           )
         ),
         isolate(
-          selectizeInput("stimulus", label = "Select Stimulus:", choices  = unique(filea[5]),
+          selectizeInput("stimulus", label = "Select Stimulus:", choices  = unique(filea[5]), selected = as.character(unique(filea[5])$StimulusName),
           multiple = TRUE, options = list()
           )
         ),
         isolate(
-          selectizeInput("timepoint", label = "Select Timepoint:", choices  = unique(filea[7]),
+          selectizeInput("timepoint", label = "Select Timepoint:", choices  = unique(filea[7]), selected = "22",
           multiple = TRUE, options = list()
           )
         ),
-      isolate(
-        selectizeInput("genes", label = "Select Genes:", choices  = unique(names(filea[58:644])),
-        multiple = TRUE, options = list()
-        )
-      ),
+      # isolate(
+      #   selectizeInput("gene", label = "Select Genes:", choices  = unique(names(filea[58:644])),
+      #   multiple = TRUE, options = list()
+      #   )
+      # ),
       isolate(
         selectInput("dimension",label = "Select Dimension to View:", choices = c("2D","3D"))
         )
       )
    })
-  output$plot1 <- renderPlot({ 
-    input$submit
-    #when donor, stimuls, and time point are selected and submit is hit, the data is extracted from the spreadsheet
-    isolate(genes <- subset(filea,Donor == input$donors & StimulusName == input$stimulus & Timepoint == input$timepoint))
-   # isolate(print((genes[c(58,60)])))
-    isolate(plot(t(genes[58:68]),xaxt="n"))
-    isolate(axis(1,at=1:11,labels=names(genes[c(58:68)])))
+   pcaPlot <- function(don,stim,tim){
+     subsetgenes <- subset(filea,Donor %in% don & StimulusName %in% stim & Timepoint %in% tim)[,58:644]
+     pca <- prcomp(t(subsetgenes), center = TRUE, scale. = TRUE)
+    
+     
+     
+   }
+  output$plot1 <- renderPlotly({
+  input$submit
+    isolate(set<- pcaPlot(input$donor, input$stimulus, input$timepoint))
+    print(set[,1])
+    #print(set[,2])
+    # if(input$dimension == "2D"){
+    #   plot_ly(set[,1],set[,2])
+    # }
+    # if(dim == "3D"){
+    #   plot_ly(set[,1],set[,2],set[,3])
+    # }
+  
+  
+  
   })
 })
