@@ -1,13 +1,15 @@
 #Notes
 # make it so table is only reparsed when its value changes
-
+library(factoextra)
 #changes maximum upload size to 30MB
 options(shiny.maxRequestSize=30*1024^2) 
 shinyServer(function(input, output,session) {
   # creates a dynamic variable for the excel file's data which is reparsed when submit is pressed, it is then used in following calculations 
   observeEvent(input$submit, {
+  isolate({ 
   path <<- input$datainput
   filea <<- parseFile(input$datainput,input$filetype,headerstate = input$checkboxes)
+  })
   })
   
   
@@ -59,22 +61,22 @@ shinyServer(function(input, output,session) {
    })
    pcaPlot <- function(don,stim,tim){
      subsetgenes <- subset(filea,Donor %in% don & StimulusName %in% stim & Timepoint %in% tim)[,58:644]
-     pca <- prcomp(t(subsetgenes), center = TRUE, scale. = TRUE)
-    
+     pca <- prcomp(subsetgenes, center = TRUE, scale = TRUE)
+     return(pca$x)
      
      
    }
+   
   output$plot1 <- renderPlotly({
   input$submit
-    isolate(set<- pcaPlot(input$donor, input$stimulus, input$timepoint))
-    print(set[,1])
-    #print(set[,2])
-    # if(input$dimension == "2D"){
-    #   plot_ly(set[,1],set[,2])
-    # }
-    # if(dim == "3D"){
-    #   plot_ly(set[,1],set[,2],set[,3])
-    # }
+    isolate({set<- pcaPlot(input$donor, input$stimulus, input$timepoint)
+     if(input$dimension == "2D"){
+       isolate(plot_ly(x=set[,1],y=set[,2],type = "scatter"))
+     }
+    else if(input$dimension=="3D"){
+       isolate(plot_ly(x=set[,1],y=set[,2],z=set[,3], type = "scatter3d"))
+    }
+    })
   
   
   
