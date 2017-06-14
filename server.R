@@ -5,6 +5,8 @@ library(factoextra)
 options(shiny.maxRequestSize=30*1024^2) 
 shinyServer(function(input, output,session) {
   # creates a dynamic variable for the excel file's data which is reparsed when submit is pressed, it is then used in following calculations 
+  path <<- "./data/Labex_modified.txt"
+  filea<<-read.csv(path,header=TRUE,sep="\t")
   observeEvent(input$select, {
   isolate({ 
   path <<- input$datainput
@@ -39,12 +41,12 @@ shinyServer(function(input, output,session) {
           )
         ),
         isolate(
-          selectizeInput("stimulus", label = "Select Stimulus:", choices  = unique(filea[5]), selected = as.character(unique(filea[5])$StimulusName),
+          selectizeInput("stimulus", label = "Select Stimulus:", choices  = unique(filea[3]), selected = as.character(unique(filea[3])$StimulusName),
           multiple = TRUE, options = list()
           )
         ),
         isolate(
-          selectizeInput("timepoint", label = "Select Timepoint:", choices  = unique(filea[7]), selected = "22",
+          selectizeInput("timepoint", label = "Select Timepoint:", choices  = unique(filea[5]), selected = "22",
           multiple = TRUE, options = list()
           )
         ),
@@ -57,7 +59,7 @@ shinyServer(function(input, output,session) {
       )
    })
    pcaPlot <- function(don,stim,tim){
-     subsetgenes <- subset(filea,Donor %in% don & StimulusName %in% stim & Timepoint %in% tim)[,58:644]
+     subsetgenes <- subset(filea,Donor %in% don & StimulusName %in% stim & Timepoint %in% tim)[,6:592]
      pca <- prcomp(subsetgenes, center = TRUE, scale = TRUE)
      return(pca$x)
    }
