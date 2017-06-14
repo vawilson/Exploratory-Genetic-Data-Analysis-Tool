@@ -4,12 +4,11 @@ shinyUI(fluidPage(
   sidebarLayout( position = "right",
     sidebarPanel( "",
       fileInput("datainput", label = "Input your data:"),
-      selectInput("filetype", label = "Select file type:", choices  = c("Comma","Tabs"), selected = "CSV"),
-      checkboxGroupInput("checkboxes",label = "", choices  = c("Contains Header") ,selected = FALSE),
-      uiOutput("data"),
-      uiOutput("data2"),
-      uiOutput("data3"),
-      actionButton("submit" ,"Submit",class = "btn btn-primary")),
+      selectInput("filetype", label = "Select file type:", choices  = c("Comma","Tabs"), selected = "Tabs"),
+      checkboxGroupInput("checkboxes",label = "", choices  = c("Contains Header") ,selected = TRUE),
+      actionButton("select" ,"Upload File",class = "btn btn-primary"),
+      uiOutput("data")
+      ),
   mainPanel(
   plotlyOutput("plot1")
   )

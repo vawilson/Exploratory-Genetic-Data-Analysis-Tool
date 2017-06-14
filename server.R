@@ -5,13 +5,12 @@ library(factoextra)
 options(shiny.maxRequestSize=30*1024^2) 
 shinyServer(function(input, output,session) {
   # creates a dynamic variable for the excel file's data which is reparsed when submit is pressed, it is then used in following calculations 
-  observeEvent(input$submit, {
+  observeEvent(input$select, {
   isolate({ 
   path <<- input$datainput
   filea <<- parseFile(input$datainput,input$filetype,headerstate = input$checkboxes)
   })
   })
-  
   
   #parse data file into list of lists depending on deliminator, strings are NOT converted to ints
   parseFile <- function(datafile,delim,headerstate){
@@ -32,7 +31,7 @@ shinyServer(function(input, output,session) {
   }
   #when submit button is pressed and data is loaded, more options appear
    output$data <- renderUI({ 
-      input$submit
+      input$select
       tagList(
         isolate(
           selectizeInput("donor",label = "Select Donor:", choices = unique(filea[1]), selected = as.character(unique(filea[1])$Donor),
@@ -49,22 +48,18 @@ shinyServer(function(input, output,session) {
           multiple = TRUE, options = list()
           )
         ),
-      # isolate(
-      #   selectizeInput("gene", label = "Select Genes:", choices  = unique(names(filea[58:644])),
-      #   multiple = TRUE, options = list()
-      #   )
-      # ),
       isolate(
         selectInput("dimension",label = "Select Dimension to View:", choices = c("2D","3D"))
-        )
+        ),
+      isolate(
+        actionButton("submit" ,"Submit",class = "btn btn-primary")
+      )
       )
    })
    pcaPlot <- function(don,stim,tim){
      subsetgenes <- subset(filea,Donor %in% don & StimulusName %in% stim & Timepoint %in% tim)[,58:644]
      pca <- prcomp(subsetgenes, center = TRUE, scale = TRUE)
      return(pca$x)
-     
-     
    }
    
   output$plot1 <- renderPlotly({
