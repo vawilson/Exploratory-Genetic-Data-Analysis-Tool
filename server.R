@@ -3,10 +3,28 @@
 library(factoextra)
 #changes maximum upload size to 30MB
 options(shiny.maxRequestSize=30*1024^2) 
-shinyServer(function(input, output,session) {
-  # creates a dynamic variable for the excel file's data which is reparsed when submit is pressed, it is then used in following calculations 
-  path <<- "./data/Labex_modified.txt"
-  filea<<-read.csv(path,header=TRUE,sep="\t")
+shinyServer(
+  
+  function(input, output,session) {
+  #sets a default data file for the app and displays its plot
+  defaultPlot <- function(){
+    path <<- "./data/Labex_modified.txt"
+    filea<<-read.csv(path,header=TRUE,sep="\t")
+    subsetfilea2 <- subset(filea,Timepoint ==22)
+    subsetgenes2 <- subsetfilea2[,6:592]
+    pca2 <- (prcomp(subsetgenes2, center = TRUE, scale = TRUE))$x
+    pca4<-cbind(pca2,subsetfilea2[,c(1,3,5)])
+    p<-plot_ly(x=pca4[,1],y=pca4[,2],type = "scatter", name = "All Data") 
+    for(i in unique(filea[,1])){
+      p<-add_trace(p,x=subset(pca4,Donor==i)[,1],y=subset(pca4,Donor==i)[,2], name= paste("Donor",i))
+    }
+    output$plot1<-renderPlotly({p})
+    
+  }
+  defaultPlot()
+  
+  
+  # updates dynamic variables for the excel file's data which is reparsed when submit is pressed, it is then used in following calculations 
   observeEvent(input$select, {
   isolate({ 
   path <<- input$datainput
@@ -59,23 +77,23 @@ shinyServer(function(input, output,session) {
       )
    })
    pcaPlot <- function(don,stim,tim){
-     subsetgenes <- subset(filea,Donor %in% don & StimulusName %in% stim & Timepoint %in% tim)[,6:592]
-     pca <- prcomp(subsetgenes, center = TRUE, scale = TRUE)
-     return(pca$x)
+     subsetfilea <- subset(filea,Donor %in% don & StimulusName %in% stim & Timepoint %in% tim)
+     subsetgenes <- subsetfilea[,6:592]
+     pca <- (prcomp(subsetgenes, center = TRUE, scale = TRUE))$x
+     pca3<-cbind(pca,subsetfilea[,c(1,3,5)])
+     return(pca3)
    }
-   
-  output$plot1 <- renderPlotly({
-  input$submit
-    isolate({set<- pcaPlot(input$donor, input$stimulus, input$timepoint)
-     if(input$dimension == "2D"){
-       isolate(plot_ly(x=set[,1],y=set[,2],type = "scatter"))
-     }
-    else if(input$dimension=="3D"){
-       isolate(plot_ly(x=set[,1],y=set[,2],z=set[,3], type = "scatter3d"))
-    }
-    })
-  
-  
-  
-  })
+   setupPlot <- function(don,stim,tim){
+     set<-pcaPlot(don,stim,tim)
+     p<-plot_ly(x=set[,1],y=set[,2],type = "scatter",name = "All Data") 
+     for(i in don){
+        p<-add_trace(p,x=subset(set,Donor==i)[,1],y=subset(set,Donor==i)[,2],name = paste("Donor",i))
+      }
+     return(p)
+   }
+   observeEvent(input$submit, {
+     k<-setupPlot(input$donor, input$stimulus, input$timepoint)
+     output$plot1<-renderPlotly({k})
+     
+   })
 })
