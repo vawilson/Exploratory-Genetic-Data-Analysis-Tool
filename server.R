@@ -15,10 +15,17 @@ shinyServer(
     pca2 <- (prcomp(subsetgenes2, center = TRUE, scale = TRUE))$x
     pca4<-cbind(pca2,subsetfilea2[,c(1,3,5)])
     p<-plot_ly(x=pca4[,1],y=pca4[,2],type = "scatter", name = "All Data") 
-    for(i in unique(filea[,1])){
-      p<-add_trace(p,x=subset(pca4,Donor==i)[,1],y=subset(pca4,Donor==i)[,2], name= paste("Donor",i))
-    }
+    # for(i in unique(filea[,1])){
+    #   p<-add_trace(p,x=subset(pca4,Donor==i)[,1],y=subset(pca4,Donor==i)[,2], name= paste("Donor",i))
+    # }
+    db <- actionButton("donorbutton" ,"Donors",class = "btn btn-primary")
+    sb <- actionButton("stimulusbutton" ,"Stimuli",class = "btn btn-primary")
+    tb <- actionButton("timebutton" ,"Time Points",class = "btn btn-primary")
     output$plot1<-renderPlotly({p})
+   
+    output$donorbutton <-renderUI({db})
+    output$stimulusbutton <-renderUI({sb})
+    output$timebutton <-renderUI({tb})
     
   }
   defaultPlot()
@@ -83,17 +90,42 @@ shinyServer(
      pca3<-cbind(pca,subsetfilea[,c(1,3,5)])
      return(pca3)
    }
-   setupPlot <- function(don,stim,tim){
+   #sets up plot with donor traces
+   setupPlotDon <- function(don,stim,tim,dim){
      set<-pcaPlot(don,stim,tim)
-     p<-plot_ly(x=set[,1],y=set[,2],type = "scatter",name = "All Data") 
+     if(dim == "2D"){
+       p<-plot_ly(x=set[,1],y=set[,2],type = "scatter",name = "All Data",width=900,height=800) 
      for(i in don){
         p<-add_trace(p,x=subset(set,Donor==i)[,1],y=subset(set,Donor==i)[,2],name = paste("Donor",i))
-      }
+     }
+     }
+     else {
+       p<-plot_ly(x=set[,1],y=set[,2],z=set[,3],type = "scatter3d",name = "All Data",width=900,height=800) 
+       for(i in don){
+         p<-add_trace(p,x=subset(set,Donor==i)[,1],y=subset(set,Donor==i)[,2],z=subset(set,Donor==i)[,3],name = paste("Donor",i))
+       }
+     }
      return(p)
    }
-   observeEvent(input$submit, {
-     k<-setupPlot(input$donor, input$stimulus, input$timepoint)
+   #Sets up default plot w/o traces
+   setupPlot <- function(don,stim,tim,dim){
+     set<-pcaPlot(don,stim,tim)
+     if(dim == "2D"){
+       p<-plot_ly(x=set[,1],y=set[,2],type = "scatter",name = "All Data",width=900,height=800) 
+     }
+     else {
+       p<-plot_ly(x=set[,1],y=set[,2],z=set[,3],type = "scatter3d",name = "All Data",width=900,height=800) 
+     }
+     return(p)
+   }
+   
+   observeEvent(input$donorbutton, {
+     k<-setupPlotDon(input$donor, input$stimulus, input$timepoint,input$dimension)
      output$plot1<-renderPlotly({k})
-     
+   })
+   
+   observeEvent(input$submit, {
+     k<-setupPlot(input$donor, input$stimulus, input$timepoint,input$dimension)
+    output$plot1<-renderPlotly({k})
    })
 })

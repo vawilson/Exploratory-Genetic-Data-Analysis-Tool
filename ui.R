@@ -10,6 +10,9 @@ shinyUI(fluidPage(
       uiOutput("data")
       ),
   mainPanel(
+  uiOutput("donorbutton"),
+  uiOutput("stimulusbutton"),
+  uiOutput("timebutton"),
   plotlyOutput("plot1")
   )
   )
