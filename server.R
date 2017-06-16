@@ -19,11 +19,9 @@ shinyServer(
     sb <- actionButton("stimulusbutton" ,"Stimuli",class = "btn btn-primary")
     tb <- actionButton("timebutton" ,"Time Points",class = "btn btn-primary")
     output$plot1<-renderPlotly({p})
-   
     output$donorbutton <-renderUI({db})
     output$stimulusbutton <-renderUI({sb})
     output$timebutton <-renderUI({tb})
-    
   }
   defaultPlot()
   
@@ -89,48 +87,60 @@ shinyServer(
    }
    #sets up plot with donor traces
    setupPlotDon <- function(don,stim,tim,dim){
+     c <- distinctColorPalette(length(don))
+  
      if(dim == "2D"){
        p<-plot_ly(x=set[,1],y=set[,2],type = "scatter",name = "All Data",width=900,height=800) 
-     for(i in don){
-        p<-add_trace(p,x=subset(set,Donor==i)[,1],y=subset(set,Donor==i)[,2],name = paste("Donor",i))
+     for(i in 1:length(don)){
+        p<-add_trace(p,x=subset(set,Donor==don[i])[,1],y=subset(set,Donor==don[i])[,2],marker = list(color = c[i]),name = don[i])
+        
      }
      }
      else {
        p<-plot_ly(x=set[,1],y=set[,2],z=set[,3],type = "scatter3d",name = "All Data",width=900,height=800) 
-       for(i in don){
-         p<-add_trace(p,x=subset(set,Donor==i)[,1],y=subset(set,Donor==i)[,2],z=subset(set,Donor==i)[,3],name = paste("Donor",i))
+       for(i in 1:length(don)){
+         p<-add_trace(p,x=subset(set,Donor==don[i])[,1],y=subset(set,Donor==don[i])[,2],z=subset(set,Donor==don[i])[,3],marker = list(color = c[i]),name = don[i])
        }
      }
      return(p)
    }
    # Sets up plot with stimulus traces
    setupPlotStim <- function(don,stim,tim,dim){
+     c <- distinctColorPalette(length(stim))
+  
+     
      if(dim == "2D"){
        p<-plot_ly(x=set[,1],y=set[,2],type = "scatter",name = "All Data",width=900,height=800) 
-       for(i in stim){
-         p<-add_trace(p,x=subset(set,StimulusName==i)[,1],y=subset(set,StimulusName==i)[,2],name = paste(i))
+       # for(i in 1:length(stim)){
+       #   p<-add_trace(p,x=subset(set,StimulusName==stim[i])[,1],y=subset(set,StimulusName==stim[i])[,2],color = c[i], name = stim[i])
+       # 
+       # }
+       for(i in 1:length(stim)){
+         p<-add_trace(p,x=subset(set,StimulusName==stim[i])[,1],y=subset(set,StimulusName==stim[i])[,2],marker = list(color = c[i]), name = stim[i])
+         
        }
      }
      else {
        p<-plot_ly(x=set[,1],y=set[,2],z=set[,3],type = "scatter3d",name = "All Data",width=900,height=800) 
-       for(i in stim){
-         p<-add_trace(p,x=subset(set,StimulusName==i)[,1],y=subset(set,StimulusName==i)[,2],z=subset(set,StimulusName==i)[,3],name = paste(i))
+       for(i in 1:length(stim)){
+         p<-add_trace(p,x=subset(set,StimulusName==stim[i])[,1],y=subset(set,StimulusName==stim[i])[,2],z=subset(set,StimulusName==stim[i])[,3],marker = list(color = c[i]), name = stim[i])
+         
        }
      }
      return(p)
    }
    setupPlotTime <- function(don,stim,tim,dim){
-     
+     c <- distinctColorPalette(length(tim))
      if(dim == "2D"){
        p<-plot_ly(x=set[,1],y=set[,2],type = "scatter",name = "All Data",width=900,height=800) 
-       for(i in tim){
-         p<-add_trace(p,x=subset(set,Timepoint==i)[,1],y=subset(set,Timepoint==i)[,2],name = paste(i))
+       for(i in 1:length(tim)){
+         p<-add_trace(p,x=subset(set,Timepoint==tim[i])[,1],y=subset(set,Timepoint==tim[i])[,2],marker = list(color = c[i]), name = tim[i])
        }
      }
      else {
        p<-plot_ly(x=set[,1],y=set[,2],z=set[,3],type = "scatter3d",name = "All Data",width=900,height=800) 
-       for(i in tim){
-         p<-add_trace(p,x=subset(set,Timepoint==i)[,1],y=subset(set,Timepoint==i)[,2],z=subset(set,Timepoint==i)[,3],name = paste(i))
+       for(i in 1:length(tim)){
+         p<-add_trace(p,x=subset(set,Timepoint==tim[i])[,1],y=subset(set,Timepoint==tim[i])[,2],z=subset(set,Timepoint==tim[i])[,3],marker = list(color = c[i]), name = tim[i])
        }
      }
      return(p)
@@ -140,8 +150,11 @@ shinyServer(
      set<<-pcaPlot(don,stim,tim)
      if(dim == "2D"){
        p<-plot_ly(x=set[,1],y=set[,2],type = "scatter",name = "All Data",width=900,height=800) 
+       
      }
      else {
+       
+       
        p<-plot_ly(x=set[,1],y=set[,2],z=set[,3],type = "scatter3d",name = "All Data",width=900,height=800) 
      }
      return(p)
