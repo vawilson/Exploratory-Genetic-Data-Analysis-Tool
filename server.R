@@ -14,10 +14,7 @@ shinyServer(
     subsetgenes2 <- subsetfilea2[,6:592]
     pca2 <- (prcomp(subsetgenes2, center = TRUE, scale = TRUE))$x
     pca4<-cbind(pca2,subsetfilea2[,c(1,3,5)])
-    p<-plot_ly(x=pca4[,1],y=pca4[,2],type = "scatter", name = "All Data") 
-    # for(i in unique(filea[,1])){
-    #   p<-add_trace(p,x=subset(pca4,Donor==i)[,1],y=subset(pca4,Donor==i)[,2], name= paste("Donor",i))
-    # }
+    p<-plot_ly(x=pca4[,1],y=pca4[,2],type = "scatter", name = "All Data", width=900,height=800) 
     db <- actionButton("donorbutton" ,"Donors",class = "btn btn-primary")
     sb <- actionButton("stimulusbutton" ,"Stimuli",class = "btn btn-primary")
     tb <- actionButton("timebutton" ,"Time Points",class = "btn btn-primary")
@@ -92,7 +89,6 @@ shinyServer(
    }
    #sets up plot with donor traces
    setupPlotDon <- function(don,stim,tim,dim){
-     set<-pcaPlot(don,stim,tim)
      if(dim == "2D"){
        p<-plot_ly(x=set[,1],y=set[,2],type = "scatter",name = "All Data",width=900,height=800) 
      for(i in don){
@@ -107,9 +103,41 @@ shinyServer(
      }
      return(p)
    }
+   # Sets up plot with stimulus traces
+   setupPlotStim <- function(don,stim,tim,dim){
+     if(dim == "2D"){
+       p<-plot_ly(x=set[,1],y=set[,2],type = "scatter",name = "All Data",width=900,height=800) 
+       for(i in stim){
+         p<-add_trace(p,x=subset(set,StimulusName==i)[,1],y=subset(set,StimulusName==i)[,2],name = paste(i))
+       }
+     }
+     else {
+       p<-plot_ly(x=set[,1],y=set[,2],z=set[,3],type = "scatter3d",name = "All Data",width=900,height=800) 
+       for(i in stim){
+         p<-add_trace(p,x=subset(set,StimulusName==i)[,1],y=subset(set,StimulusName==i)[,2],z=subset(set,StimulusName==i)[,3],name = paste(i))
+       }
+     }
+     return(p)
+   }
+   setupPlotTime <- function(don,stim,tim,dim){
+     
+     if(dim == "2D"){
+       p<-plot_ly(x=set[,1],y=set[,2],type = "scatter",name = "All Data",width=900,height=800) 
+       for(i in tim){
+         p<-add_trace(p,x=subset(set,Timepoint==i)[,1],y=subset(set,Timepoint==i)[,2],name = paste(i))
+       }
+     }
+     else {
+       p<-plot_ly(x=set[,1],y=set[,2],z=set[,3],type = "scatter3d",name = "All Data",width=900,height=800) 
+       for(i in tim){
+         p<-add_trace(p,x=subset(set,Timepoint==i)[,1],y=subset(set,Timepoint==i)[,2],z=subset(set,Timepoint==i)[,3],name = paste(i))
+       }
+     }
+     return(p)
+   }
    #Sets up default plot w/o traces
    setupPlot <- function(don,stim,tim,dim){
-     set<-pcaPlot(don,stim,tim)
+     set<<-pcaPlot(don,stim,tim)
      if(dim == "2D"){
        p<-plot_ly(x=set[,1],y=set[,2],type = "scatter",name = "All Data",width=900,height=800) 
      }
@@ -123,6 +151,15 @@ shinyServer(
      k<-setupPlotDon(input$donor, input$stimulus, input$timepoint,input$dimension)
      output$plot1<-renderPlotly({k})
    })
+   observeEvent(input$stimulusbutton, {
+     k<-setupPlotStim(input$donor, input$stimulus, input$timepoint,input$dimension)
+     output$plot1<-renderPlotly({k})
+   })
+   observeEvent(input$timebutton, {
+     k<-setupPlotTime(input$donor, input$stimulus, input$timepoint,input$dimension)
+     output$plot1<-renderPlotly({k})
+   })
+   
    
    observeEvent(input$submit, {
      k<-setupPlot(input$donor, input$stimulus, input$timepoint,input$dimension)
