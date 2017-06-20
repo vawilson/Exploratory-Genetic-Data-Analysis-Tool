@@ -7,30 +7,34 @@ shinyServer(
   
   function(input, output,session) {
   #sets a default data file for the app and displays its plot
+    screePlot <- function(pcaraw){
+      prop <- pcaraw$sdev^2 / sum(pcaraw$sdev^2)
+      s <- plot_ly(y = prop[1:100],
+                   type = 'bar',
+                   name = "proportion of variance") %>%
+        layout(title = "Scree Plot")
+      s <-add_trace(s,
+                    y = cumsum(prop)[1:100],
+                    type = 'scatter', mode = 'lines+markers',
+                    marker = list(symbol="circle"),
+                    name = "cumulative variance")
+      return(s)
+    }  
   defaultPlot <- function(){
     path <<- "./data/Labex_modified.txt"
     filea<<-read.csv(path,header=TRUE,sep="\t")
     subsetfilea2 <- subset(filea,Timepoint ==22)
     subsetgenes2 <- subsetfilea2[,6:592]
-    pcaraw <-prcomp(subsetgenes2, center = TRUE, scale = TRUE)
-    pca2 <- pcaraw$x
+    pcaraw2 <-prcomp(subsetgenes2, center = TRUE, scale = TRUE)
+    pca2 <- pcaraw2$x
     pca4<-cbind(pca2,subsetfilea2[,c(1,3,5)])
-    prop <- pcaraw$sdev^2 / sum(pcaraw$sdev^2)
-    s <- plot_ly(y = prop,
-                 type = 'bar',
-                 name = "proportion of variance") %>%
-      layout(title = "Scree Plot")
-    s <-add_trace(s,
-                  y = cumsum(prop),
-                  type = 'scatter', mode = 'lines+markers',
-                  marker = list(symbol="circle"),
-                  name = "cumulative variance")
-    p<-plot_ly(x=pca4[,1],y=pca4[,2],type = "scatter", name = "All Data",text=paste(" D:",pca4[,588]," S:",pca4[,589]," T:",pca4[,590]), hoverinfo="text", width=900,height=400) 
+    ds <-screePlot(pcaraw2)
+    p<-plot_ly(x=pca4[,1],y=pca4[,2],type = "scatter", name = "All Data",text=paste(" D:",pca4[,588]," S:",pca4[,589]," T:",pca4[,590]), hoverinfo="text") 
     db <- actionButton("donorbutton" ,"Donors",class = "btn btn-primary")
     sb <- actionButton("stimulusbutton" ,"Stimuli",class = "btn btn-primary")
     tb <- actionButton("timebutton" ,"Time Points",class = "btn btn-primary")
     output$plot1<-renderPlotly({p})
-    output$plot2 <- renderPlotly({s})
+    output$plot2 <- renderPlotly({ds})
     output$donorbutton <-renderUI({db})
     output$stimulusbutton <-renderUI({sb})
     output$timebutton <-renderUI({tb})
@@ -90,26 +94,30 @@ shinyServer(
       )
       )
    })
+ 
    pcaPlot <- function(don,stim,tim){
      subsetfilea <<- subset(filea,Donor %in% don & StimulusName %in% stim & Timepoint %in% tim)
      subsetgenes <- subsetfilea[,6:592]
-     pca <- (prcomp(subsetgenes, center = TRUE, scale. = TRUE))$x
+     print(dim(subsetgenes))
+     pcaorig <<- (prcomp(subsetgenes, center = TRUE, scale. = TRUE))
+     pca <- pcaorig$x
      pca3<-cbind(pca,subsetfilea[,c(1,3,5)])
      return(pca3)
    }
    #sets up plot with donor traces
    setupPlotDon <- function(don,stim,tim,dim){
      c <- distinctColorPalette(length(don))
-     
+    
      if(dim == "2D"){
-       p<-plot_ly(x=set[,1],y=set[,2],type = "scatter",name = "All Data", width=900,height=800) 
+       p<-plot_ly(x=set[,1],y=set[,2],type = "scatter",name = "All Data") 
+       print(length(set[,1]))
      for(i in 1:length(don)){
         p<-add_trace(p,x=subset(set,Donor==don[i])[,1],y=subset(set,Donor==don[i])[,2],marker = list(color = c[i]),name = don[i])
-        
+       
      }
      }
      else {
-       p<-plot_ly(x=set[,1],y=set[,2],z=set[,3],type = "scatter3d",name = "All Data",width=900,height=800) 
+       p<-plot_ly(x=set[,1],y=set[,2],z=set[,3],type = "scatter3d",name = "All Data") 
        for(i in 1:length(don)){
          p<-add_trace(p,x=subset(set,Donor==don[i])[,1],y=subset(set,Donor==don[i])[,2],z=subset(set,Donor==don[i])[,3],marker = list(color = c[i]),name = don[i])
        }
@@ -124,7 +132,7 @@ shinyServer(
      if(dim == "2D"){
        #p<-plot_ly(x=set[,1],y=set[,2],type = "scatter", name = "All Data",text=paste(" D:",set[,588]," S:",set[,589]," T:",set[,590]), hoverinfo="text", width=900,height=800) 
        
-       p<-plot_ly(x=set[,1],y=set[,2],type = "scatter", width=900,height=800) 
+       p<-plot_ly(x=set[,1],y=set[,2],type = "scatter") 
  
        for(i in 1:length(stim)){
          #validate(need(set.isNull(), paste("set",dim(set),"len",length(set[,588]))))
@@ -134,7 +142,7 @@ shinyServer(
        }
      }
      else {
-       p<-plot_ly(x=set[,1],y=set[,2],z=set[,3],type = "scatter3d",name = "All Data",width=900,height=800) 
+       p<-plot_ly(x=set[,1],y=set[,2],z=set[,3],type = "scatter3d",name = "All Data") 
        for(i in 1:length(stim)){
          print(length(stim))
          p<-add_trace(p,x=subset(set,StimulusName==stim[i])[,1],y=subset(set,StimulusName==stim[i])[,2],z=subset(set,StimulusName==stim[i])[,3],marker = list(color = c[i]), name = stim[i])
@@ -148,13 +156,13 @@ shinyServer(
      if(dim == "2D"){
        print(length(set[,588]))
        print(length(set[,1]))
-       p<-plot_ly(x=set[,1],y=set[,2],type = "scatter",name = "All Data", name = "All Data",width=900,height=800) 
+       p<-plot_ly(x=set[,1],y=set[,2],type = "scatter",name = "All Data", name = "All Data") 
        for(i in 1:length(tim)){
          p<-add_trace(p,x=subset(set,Timepoint==tim[i])[,1],y=subset(set,Timepoint==tim[i])[,2],marker = list(color = c[i]), name = tim[i])
        }
      }
      else {
-      p<-plot_ly(x=set[,1],y=set[,2],z=set[,3],type = "scatter3d",name = "All Data",width=900,height=800) 
+      p<-plot_ly(x=set[,1],y=set[,2],z=set[,3],type = "scatter3d",name = "All Data") 
        for(i in 1:length(tim)){
          p<-add_trace(p,x=subset(set,Timepoint==tim[i])[,1],y=subset(set,Timepoint==tim[i])[,2],z=subset(set,Timepoint==tim[i])[,3],marker = list(color = c[i]), name = tim[i])
        }
@@ -165,12 +173,12 @@ shinyServer(
    setupPlot <- function(don,stim,tim,dim){
      set<<-pcaPlot(don,stim,tim)
      if(dim == "2D"){
-       p<-plot_ly(x=set[,1],y=set[,2],type = "scatter",name = "All Data",text=paste(" D:",set[,588]," S:",set[,589]," T:",set[,590]),hoverinfo="text",width=900,height=800) 
+       p<-plot_ly(x=set[,1],y=set[,2],type = "scatter",name = "All Data") 
        
      }
      else {
        
-       p<-plot_ly(x=set[,1],y=set[,2],z=set[,3],type = "scatter3d",name = "All Data",text=paste(" D:",set[,588]," S:",set[,589]," T:",set[,590]),hoverinfo="text",width=900,height=800) 
+       p<-plot_ly(x=set[,1],y=set[,2],z=set[,3],type = "scatter3d",name = "All Data") 
      }
      return(p)
    }
@@ -194,5 +202,6 @@ shinyServer(
      
      k<-setupPlot(input$donor, input$stimulus, input$timepoint,input$dimension)
     output$plot1<-renderPlotly({k})
+    output$plot2 <-renderPlotly({screePlot(pcaorig)})
    })
 })
