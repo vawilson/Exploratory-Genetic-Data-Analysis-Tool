@@ -12,13 +12,25 @@ shinyServer(
     filea<<-read.csv(path,header=TRUE,sep="\t")
     subsetfilea2 <- subset(filea,Timepoint ==22)
     subsetgenes2 <- subsetfilea2[,6:592]
-    pca2 <- (prcomp(subsetgenes2, center = TRUE, scale = TRUE))$x
+    pcaraw <-prcomp(subsetgenes2, center = TRUE, scale = TRUE)
+    pca2 <- pcaraw$x
     pca4<-cbind(pca2,subsetfilea2[,c(1,3,5)])
-    p<-plot_ly(x=pca4[,1],y=pca4[,2],type = "scatter", name = "All Data",text=paste(" D:",pca4[,588]," S:",pca4[,589]," T:",pca4[,590]), hoverinfo="text", width=900,height=800) 
+    prop <- pcaraw$sdev^2 / sum(pcaraw$sdev^2)
+    s <- plot_ly(y = prop,
+                 type = 'bar',
+                 name = "proportion of variance") %>%
+      layout(title = "Scree Plot")
+    s <-add_trace(s,
+                  y = cumsum(prop),
+                  type = 'scatter', mode = 'lines+markers',
+                  marker = list(symbol="circle"),
+                  name = "cumulative variance")
+    p<-plot_ly(x=pca4[,1],y=pca4[,2],type = "scatter", name = "All Data",text=paste(" D:",pca4[,588]," S:",pca4[,589]," T:",pca4[,590]), hoverinfo="text", width=900,height=400) 
     db <- actionButton("donorbutton" ,"Donors",class = "btn btn-primary")
     sb <- actionButton("stimulusbutton" ,"Stimuli",class = "btn btn-primary")
     tb <- actionButton("timebutton" ,"Time Points",class = "btn btn-primary")
     output$plot1<-renderPlotly({p})
+    output$plot2 <- renderPlotly({s})
     output$donorbutton <-renderUI({db})
     output$stimulusbutton <-renderUI({sb})
     output$timebutton <-renderUI({tb})
@@ -165,6 +177,7 @@ shinyServer(
    
    observeEvent(input$donorbutton, {
      k<-setupPlotDon(input$donor, input$stimulus, input$timepoint,input$dimension)
+     
      output$plot1<-renderPlotly({k})
    })
    observeEvent(input$stimulusbutton, {
@@ -178,6 +191,7 @@ shinyServer(
    
    
    observeEvent(input$submit, {
+     
      k<-setupPlot(input$donor, input$stimulus, input$timepoint,input$dimension)
     output$plot1<-renderPlotly({k})
    })

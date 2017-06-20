@@ -13,7 +13,8 @@ shinyUI(fluidPage(
   uiOutput("donorbutton"),
   uiOutput("stimulusbutton"),
   uiOutput("timebutton"),
-  plotlyOutput("plot1")
+  plotlyOutput("plot1"),
+  plotlyOutput("plot2")
   )
   )
 ))
