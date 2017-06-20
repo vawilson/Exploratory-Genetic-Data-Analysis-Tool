@@ -1,6 +1,7 @@
 library(plotly)
 shinyUI(fluidPage(
-  titlePanel("title panel"),
+  
+  
   sidebarLayout( position = "right",
     sidebarPanel( "",
       fileInput("datainput", label = "Input your data:"),
@@ -9,12 +10,21 @@ shinyUI(fluidPage(
       actionButton("select" ,"Upload File",class = "btn btn-primary"),
       uiOutput("data")
       ),
+    
   mainPanel(
-  uiOutput("donorbutton"),
-  uiOutput("stimulusbutton"),
-  uiOutput("timebutton"),
-  plotlyOutput("plot1"),
-  plotlyOutput("plot2")
+    fluidRow(
+      column(1,offset = 3,uiOutput("donorbutton")),
+      column(1,uiOutput("stimulusbutton")),
+      column(1,uiOutput("timebutton"))
+      
+      
+    ),
+   
+    tabsetPanel( 
+      tabPanel("PCA",plotlyOutput("plot1")),
+      tabPanel("Scree Plot",plotlyOutput("plot2"))
+    )
+  
   )
   )
 ))
