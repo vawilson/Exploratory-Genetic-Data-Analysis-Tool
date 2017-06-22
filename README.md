@@ -1,1 +1,1 @@
-# PCA-Tool
+# Exploratory Data Analysis Tool
