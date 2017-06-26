@@ -6,6 +6,7 @@
 library(factoextra)
 library(randomcoloR)
 library(roxygen2)
+library(tsne)
 #changes maximum upload size to 30MB
 options(shiny.maxRequestSize=30*1024^2) 
 #start server
@@ -122,6 +123,12 @@ shinyServer(
           selectizeInput("timepoint", label = "Select Timepoint:", choices  = unique(filea[5]), selected = "22",
                          multiple = TRUE, options = list()
           )
+        ),
+        isolate(
+          checkboxInput("pca", label = "PCA", value = TRUE)
+        ),
+        isolate(
+          checkboxInput("tsne", label = "t-SNE", value = TRUE)
         ),
         isolate(
           selectInput("dimension",label = "Select Dimension to View:", choices = c("2D","3D"))
@@ -246,7 +253,12 @@ shinyServer(
     #' @return a plot of the pca without any traces
 
     setupPlot <- function(don,stim,tim,dim){
+      if(input$pca && !(input$tsne)){
       set<<-pcaPlot(don,stim,tim)
+      }
+      else{
+        
+      }
       if(dim == "2D"){
         p<-plot_ly(x=set[,1],y=set[,2],type = "scatter",name = "All Data",width = 900, height = 700) 
       }
@@ -270,7 +282,10 @@ shinyServer(
     })
     
     observeEvent(input$submit, {
+      print(paste(input$pca,input$tsne))
+      
       k<-setupPlot(input$donor, input$stimulus, input$timepoint,input$dimension)
+     
       output$plot1<-renderPlotly({k})
       output$plot2 <-renderPlotly({screePlot(pcaorig)})
     })
