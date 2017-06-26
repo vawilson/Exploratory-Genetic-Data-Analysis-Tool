@@ -155,6 +155,11 @@ shinyServer(
       pca3<-cbind(pca,subsetfilea[,c(1,3,5)])
       return(pca3)
     }
+    tsnePlot <- function(don,stim,tim){
+      subsetfilea <<- subset(filea,Donor %in% don & StimulusName %in% stim & Timepoint %in% tim)
+      subsetgenes <- subsetfilea[,6:592]
+      tsneplot <- tsne(subsetgenes)
+    }
     #' Setup Plot Donor Function
     #'
     #' @param don the selected donors to be plotted (vector)
@@ -257,7 +262,7 @@ shinyServer(
       set<<-pcaPlot(don,stim,tim)
       }
       else{
-        
+      set<<-tsnePlot(don,stim,tim)
       }
       if(dim == "2D"){
         p<-plot_ly(x=set[,1],y=set[,2],type = "scatter",name = "All Data",width = 900, height = 700) 
@@ -282,10 +287,7 @@ shinyServer(
     })
     
     observeEvent(input$submit, {
-      print(paste(input$pca,input$tsne))
-      
       k<-setupPlot(input$donor, input$stimulus, input$timepoint,input$dimension)
-     
       output$plot1<-renderPlotly({k})
       output$plot2 <-renderPlotly({screePlot(pcaorig)})
     })
