@@ -7,15 +7,17 @@ shinyUI(fluidPage(
       fileInput("datainput", label = "Input your data:"),
       selectInput("filetype", label = "Select file type:", choices  = c("Comma","Tabs"), selected = "Tabs"),
       checkboxGroupInput("checkboxes",label = "", choices  = c("Contains Header") ,selected = TRUE),
-      actionButton("select" ,"Upload File",class = "btn btn-primary"),
-      uiOutput("data")
+      actionButton("upload" ,"Upload File",class = "btn btn-primary"),
+      uiOutput("data"),
+      uiOutput("data2"),
+      uiOutput("param")
       ),
     
   mainPanel(
     fluidRow(
-      column(1,offset = 3,uiOutput("donorbutton")),
-      column(1,uiOutput("stimulusbutton")),
-      column(1,uiOutput("timebutton"))
+      db <- actionButton("donorbutton" ,"Donors",class = "btn btn-primary"),
+      sb <- actionButton("stimulusbutton" ,"Stimuli",class = "btn btn-primary"),
+      tb <- actionButton("timebutton" ,"Time Points",class = "btn btn-primary")
       
       
     ),

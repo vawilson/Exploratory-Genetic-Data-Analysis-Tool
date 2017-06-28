@@ -6,7 +6,7 @@
 library(factoextra)
 library(randomcoloR)
 library(roxygen2)
-library(tsne)
+library(Rtsne)
 #changes maximum upload size to 30MB
 options(shiny.maxRequestSize=30*1024^2) 
 #start server
@@ -58,20 +58,14 @@ shinyServer(
       pca4<-cbind(pca2,subsetfilea2[,c(1,3,5)])
       ds <-screePlot(pcaraw2)
       p<-plot_ly(x=pca4[,1],y=pca4[,2],type = "scatter", name = "All Data",text=paste(" D:",pca4[,588]," S:",pca4[,589]," T:",pca4[,590]), hoverinfo="text",width = 900, height = 700) 
-      db <- actionButton("donorbutton" ,"Donors",class = "btn btn-primary")
-      sb <- actionButton("stimulusbutton" ,"Stimuli",class = "btn btn-primary")
-      tb <- actionButton("timebutton" ,"Time Points",class = "btn btn-primary")
       output$plot1<-renderPlotly({p})
       output$plot2 <- renderPlotly({ds})
-      output$donorbutton <-renderUI({db})
-      output$stimulusbutton <-renderUI({sb})
-      output$timebutton <-renderUI({tb})
     }
     defaultPlot()
     
-    
+  
     # updates dynamic variables for the excel file's data which is reparsed when submit is pressed, it is then used in following calculations 
-    observeEvent(input$select, {
+    observeEvent(input$upload, {
       isolate({ 
         path <<- input$datainput
         filea <<- parseFile(input$datainput,input$filetype,headerstate = input$checkboxes)
@@ -107,7 +101,7 @@ shinyServer(
     }
     #when submit button is pressed and data is loaded, more options appear
     output$data <- renderUI({ 
-      input$select
+      input$upload
       tagList(
         isolate(
           selectizeInput("donor",label = "Select Donor:", choices = unique(filea[1]), selected = as.character(unique(filea[1])$Donor),
@@ -125,6 +119,16 @@ shinyServer(
           )
         ),
         isolate(
+          actionButton("select" ,"Select",class = "btn btn-primary")
+        )
+        
+       
+      )
+    })
+    output$data2 <- renderUI({ 
+      input$select
+      tagList(
+        isolate(
           checkboxInput("pca", label = "PCA", value = TRUE)
         ),
         isolate(
@@ -136,6 +140,7 @@ shinyServer(
         isolate(
           actionButton("submit" ,"Submit",class = "btn btn-primary")
         )
+        
       )
     })
     
@@ -147,18 +152,20 @@ shinyServer(
     #'
     #' @return a datatable of the pca dimensions for each set of donor, simulus, and timepoints
     #'
-    pcaPlot <- function(don,stim,tim){
-      subsetfilea <<- subset(filea,Donor %in% don & StimulusName %in% stim & Timepoint %in% tim)
-      subsetgenes <- subsetfilea[,6:592]
-      pcaorig <<- (prcomp(subsetgenes, center = TRUE, scale. = TRUE))
+   subsetData <- function(don,stim,tim){
+     subsetfilea <<- subset(filea,Donor %in% don & StimulusName %in% stim & Timepoint %in% tim)
+     subsetgenes <<- subsetfilea[,6:592]
+   }
+    pcaPlot <- function(c,s){
+      pcaorig <<- (prcomp(subsetgenes, center = c, scale. = s))
       pca <- pcaorig$x
       pca3<-cbind(pca,subsetfilea[,c(1,3,5)])
       return(pca3)
     }
-    tsnePlot <- function(don,stim,tim){
-      subsetfilea <<- subset(filea,Donor %in% don & StimulusName %in% stim & Timepoint %in% tim)
-      subsetgenes <- subsetfilea[,6:592]
-      tsneplot <- tsne(subsetgenes)
+    tsnePlot <- function(pc,pe,it){
+      tsneplot <- Rtsne(subsetgenes, max_iter = it,pca = pc,perplexity = pe, dims =3)
+     tsne2<-cbind(tsneplot$Y,subsetfilea[,c(1,3,5)])
+      return(tsne2)
     }
     #' Setup Plot Donor Function
     #'
@@ -257,13 +264,9 @@ shinyServer(
     #'
     #' @return a plot of the pca without any traces
 
-    setupPlot <- function(don,stim,tim,dim){
-      if(input$pca && !(input$tsne)){
-      set<<-pcaPlot(don,stim,tim)
-      }
-      else{
-      set<<-tsnePlot(don,stim,tim)
-      }
+    setupPlot <- function(dim,plot){
+      set<<-plot
+      
       if(dim == "2D"){
         p<-plot_ly(x=set[,1],y=set[,2],type = "scatter",name = "All Data",width = 900, height = 700) 
       }
@@ -286,9 +289,58 @@ shinyServer(
       output$plot1<-renderPlotly({k})
     })
     
-    observeEvent(input$submit, {
-      k<-setupPlot(input$donor, input$stimulus, input$timepoint,input$dimension)
-      output$plot1<-renderPlotly({k})
-      output$plot2 <-renderPlotly({screePlot(pcaorig)})
+    observeEvent(input$select, {
+      subsetData(input$donor, input$stimulus, input$timepoint)
     })
+    observeEvent(input$submit, {
+      if(input$pca & !input$tsne){
+        output$param <- renderUI({
+          tagList(
+          checkboxInput("scale", label = "Scale", value = TRUE),
+          checkboxInput("center", label = "Center", value = TRUE),
+          actionButton("go" ,"Go!",class = "btn btn-primary")
+          )
+        })
+      } 
+      else if(input$tsne & !input$pca){
+        output$param <- renderUI({
+          tagList(
+            sliderInput("perplexity", label = "Perplexity", min = 5, max = 100, value = 50),
+            sliderInput("iterations", label = "Iterations", min = 1, max = 20000, value = 50),
+            actionButton("go2" ,"Go!",class = "btn btn-primary")
+    )
+        })
+        
+      }
+      else if(input$tsne & input$pca){
+        output$param <- renderUI({
+          tagList(
+            sliderInput("perplexity", label = "Perplexity", min = 5, max = 100, value = 50),
+            sliderInput("iterations", label = "Iterations", min = 1, max = 20000, value = 50),  
+          actionButton("go3" ,"Go!",class = "btn btn-primary")
+          )
+        })
+      }
+      else{
+        textOutput("Error: No algorithm selected.")
+      }
+      
+      
+    })
+    observeEvent(input$go, {
+      k<-setupPlot(input$dimension,pcaPlot(input$center,input$scale))
+      output$plot2 <-renderPlotly({screePlot(pcaorig)})
+      output$plot1<-renderPlotly({k})
+    })
+    observeEvent(input$go2, {
+      k<-setupPlot(input$dimension,tsnePlot(FALSE,input$perplexity,input$iterations))
+      output$plot1<-renderPlotly({k})
+      
+    })
+    observeEvent(input$go3, {
+      k<-setupPlot(input$dimension,tsnePlot(TRUE,input$perplexity,input$iterations))
+      output$plot1<-renderPlotly({k})
+      
+    })
+    
   })
