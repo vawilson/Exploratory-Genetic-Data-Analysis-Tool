@@ -6,7 +6,7 @@ PCA:
 
 Corresponding Scree Plot:
 
-![alt text](https://github.com/vawilson/EDAT/blob/master/pics/Screenshot 2017-06-21 10.25.19.png)
+![alt text](https://github.com/vawilson/Exploratory-Genetic-Data-Analysis-Tool/blob/master/pics/Screenshot%202017-06-21%2010.25.19.png)
 
 PCA + t-SNE yields much more distinguishable clusters! 
 
