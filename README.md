@@ -4,6 +4,10 @@ EGDAT aids users in completing exploratory data analysis on large amounts of gen
 PCA:
 ![alt text](https://github.com/vawilson/EDAT/blob/master/pics/Screenshot%202017-06-21%2010.22.35.png)
 
+Corresponding Scree Plot:
+
+![alt text](https://github.com/vawilson/EDAT/blob/master/pics/Screenshot 2017-06-21 10.25.19.png)
+
 PCA + t-SNE yields much more distinguishable clusters! 
 
 ![alt text](https://github.com/vawilson/EDAT/blob/master/pics/Screenshot%202017-06-21%2010.22.35.png)
