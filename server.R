@@ -164,7 +164,15 @@ shinyServer(
     }
     tsnePlot <- function(pc,pe,it){
       tsneplot <- Rtsne(subsetgenes, max_iter = it,pca = pc,perplexity = pe, dims =3)
+      output$error <- renderText(paste("Cost: ",tail(tsneplot$itercosts,n=1)))
      tsne2<-cbind(tsneplot$Y,subsetfilea[,c(1,3,5)])
+     
+      return(tsne2)
+    }
+    tsnePlotM <- function(pc,pe,it,c,s,pdim){
+      tsneplot <- Rtsne(subsetgenes, max_iter = it,pca = pc,perplexity = pe, dims =3,pca_center = c, pca_scale = s, initial_dims = pdim)
+      output$error <- renderText(paste("Cost: ",tail(tsneplot$itercosts,n=1)))
+      tsne2<-cbind(tsneplot$Y,subsetfilea[,c(1,3,5)])
       return(tsne2)
     }
     #' Setup Plot Donor Function
@@ -315,8 +323,11 @@ shinyServer(
       else if(input$tsne & input$pca){
         output$param <- renderUI({
           tagList(
-            sliderInput("perplexity", label = "Perplexity", min = 5, max = 100, value = 50),
-            sliderInput("iterations", label = "Iterations", min = 1, max = 20000, value = 50),  
+            sliderInput("pcadims", label = "PCA:Dimensions used", min = 1, max = 100, value = 50),
+            checkboxInput("scale", label = "PCA:Scale", value = TRUE),
+            checkboxInput("center", label = "PCA:Center", value = TRUE),
+            sliderInput("perplexity", label = "t-SNE:Perplexity", min = 5, max = 100, value = 50),
+            sliderInput("iterations", label = "t-SNE:Iterations", min = 1, max = 20000, value = 50),  
           actionButton("go3" ,"Go!",class = "btn btn-primary")
           )
         })
@@ -338,7 +349,7 @@ shinyServer(
       
     })
     observeEvent(input$go3, {
-      k<-setupPlot(input$dimension,tsnePlot(TRUE,input$perplexity,input$iterations))
+      k<-setupPlot(input$dimension,tsnePlotM(TRUE,input$perplexity,input$iterations,input$center,input$scale,input$pcadims))
       output$plot1<-renderPlotly({k})
       
     })

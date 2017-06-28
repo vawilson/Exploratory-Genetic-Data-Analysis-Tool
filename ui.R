@@ -17,7 +17,8 @@ shinyUI(fluidPage(
     fluidRow(
       db <- actionButton("donorbutton" ,"Donors",class = "btn btn-primary"),
       sb <- actionButton("stimulusbutton" ,"Stimuli",class = "btn btn-primary"),
-      tb <- actionButton("timebutton" ,"Time Points",class = "btn btn-primary")
+      tb <- actionButton("timebutton" ,"Time Points",class = "btn btn-primary"),
+      textOutput("error")
       
       
     ),
@@ -25,6 +26,7 @@ shinyUI(fluidPage(
     tabsetPanel( 
       tabPanel("PCA",plotlyOutput("plot1")),
       tabPanel("Scree Plot",plotlyOutput("plot2"))
+      
     )
   
   )
