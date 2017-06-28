@@ -8,9 +8,10 @@ library(randomcoloR)
 library(roxygen2)
 library(Rtsne)
 #changes maximum upload size to 30MB
-options(shiny.maxRequestSize=30*1024^2) 
+options(shiny.maxRequestSize=30*1024^2,warn = -1) 
 #start server
 shinyServer(
+
 #' Title
 #'
 #' @param input 
@@ -57,7 +58,7 @@ shinyServer(
       pca2 <- pcaraw2$x
       pca4<-cbind(pca2,subsetfilea2[,c(1,3,5)])
       ds <-screePlot(pcaraw2)
-      p<-plot_ly(x=pca4[,1],y=pca4[,2],type = "scatter", name = "All Data",text=paste(" D:",pca4[,588]," S:",pca4[,589]," T:",pca4[,590]), hoverinfo="text",width = 900, height = 700) 
+      p<-plot_ly(x=pca4[,1],y=pca4[,2],type = "scatter",mode = "markers",marker = list(symbol = "circles") name = "All Data",text=paste(" D:",pca4[,588]," S:",pca4[,589]," T:",pca4[,590]), hoverinfo="text",width = 900, height = 700) 
       output$plot1<-renderPlotly({p})
       output$plot2 <- renderPlotly({ds})
     }
@@ -163,14 +164,14 @@ shinyServer(
       return(pca3)
     }
     tsnePlot <- function(pc,pe,it){
-      tsneplot <- Rtsne(subsetgenes, max_iter = it,pca = pc,perplexity = pe, dims =3)
+      tsneplot <- Rtsne(subsetgenes,verbose = TRUE, max_iter = it,pca = pc,perplexity = pe, dims =3)
       output$error <- renderText(paste("Cost: ",tail(tsneplot$itercosts,n=1)))
      tsne2<-cbind(tsneplot$Y,subsetfilea[,c(1,3,5)])
      
       return(tsne2)
     }
     tsnePlotM <- function(pc,pe,it,c,s,pdim){
-      tsneplot <- Rtsne(subsetgenes, max_iter = it,pca = pc,perplexity = pe, dims =3,pca_center = c, pca_scale = s, initial_dims = pdim)
+      tsneplot <- Rtsne(subsetgenes,verbose = TRUE, max_iter = it,pca = pc,perplexity = pe, dims =3,pca_center = c, pca_scale = s, initial_dims = pdim)
       output$error <- renderText(paste("Cost: ",tail(tsneplot$itercosts,n=1)))
       tsne2<-cbind(tsneplot$Y,subsetfilea[,c(1,3,5)])
       return(tsne2)
@@ -188,7 +189,7 @@ shinyServer(
       c <- distinctColorPalette(length(don))
       
       if(dim == "2D"){
-        p<-plot_ly(x=set[,1],y=set[,2],type = "scatter",name = "All Data",width = 900, height = 700) 
+        p<-plot_ly(x=set[,1],y=set[,2],type = "scatter",mode = "markers",marker = list(symbol = "circles"),name = "All Data",width = 900, height = 700) 
         
         for(i in 1:length(don)){
           p<-add_trace(p,type = "scatter",x=subset(set,Donor==don[i])[,1],y=subset(set,Donor==don[i])[,2],marker = list(color = c[i]),name = don[i])
@@ -196,7 +197,7 @@ shinyServer(
         }
       }
       else {
-        p<-plot_ly(x=set[,1],y=set[,2],z=set[,3],type = "scatter3d",name = "All Data",width = 900, height = 700) 
+        p<-plot_ly(x=set[,1],y=set[,2],z=set[,3],type = "scatter3d",mode = "markers",marker = list(symbol = "circles"),name = "All Data",width = 900, height = 700) 
         for(i in 1:length(don)){
           p<-add_trace(p,x=subset(set,Donor==don[i])[,1],y=subset(set,Donor==don[i])[,2],z=subset(set,Donor==don[i])[,3],marker = list(color = c[i]),name = don[i])
         }
@@ -219,7 +220,7 @@ shinyServer(
       
       
       if(dim == "2D"){
-        p<-plot_ly(x=set[,1],y=set[,2],type = "scatter",width = 900, height = 700) 
+        p<-plot_ly(x=set[,1],y=set[,2],type = "scatter",mode = "markers",marker = list(symbol = "circles"),width = 900, height = 700) 
         
         for(i in 1:length(stim)){
           
@@ -227,7 +228,7 @@ shinyServer(
         }
       }
       else {
-        p<-plot_ly(x=set[,1],y=set[,2],z=set[,3],type = "scatter3d",name = "All Data",width = 900, height = 700) 
+        p<-plot_ly(x=set[,1],y=set[,2],z=set[,3],type = "scatter3d",mode = "markers",marker = list(symbol = "circles"),name = "All Data",width = 900, height = 700) 
         for(i in 1:length(stim)){
           
           p<-add_trace(p,x=subset(set,StimulusName==stim[i])[,1],y=subset(set,StimulusName==stim[i])[,2],z=subset(set,StimulusName==stim[i])[,3],marker = list(color = c[i]), name = stim[i])
@@ -248,13 +249,13 @@ shinyServer(
     setupPlotTime <- function(don,stim,tim,dim){
       c <- distinctColorPalette(length(tim))
       if(dim == "2D"){
-        p<-plot_ly(x=set[,1],y=set[,2],type = "scatter",name = "All Data", name = "All Data",width = 900, height = 700) 
+        p<-plot_ly(x=set[,1],y=set[,2],type = "scatter",mode = "markers",marker = list(symbol = "circles"),name = "All Data", name = "All Data",width = 900, height = 700) 
         for(i in 1:length(tim)){
           p<-add_trace(p,x=subset(set,Timepoint==tim[i])[,1],y=subset(set,Timepoint==tim[i])[,2],marker = list(color = c[i]), name = tim[i])
         }
       }
       else {
-        p<-plot_ly(x=set[,1],y=set[,2],z=set[,3],type = "scatter3d", text ="",name = "All Data",width = 900, height = 700) 
+        p<-plot_ly(x=set[,1],y=set[,2],z=set[,3],type = "scatter3d", mode = "markers",marker = list(symbol = "circles"),text ="",name = "All Data",width = 900, height = 700) 
         
         for(i in 1:length(tim)){
           p<-add_trace(p,x=subset(set,Timepoint==tim[i])[,1],y=subset(set,Timepoint==tim[i])[,2],z=subset(set,Timepoint==tim[i])[,3], marker = list(color = c[i]), name = tim[i])
@@ -276,10 +277,10 @@ shinyServer(
       set<<-plot
       
       if(dim == "2D"){
-        p<-plot_ly(x=set[,1],y=set[,2],type = "scatter",name = "All Data",width = 900, height = 700) 
+        p<-plot_ly(x=set[,1],y=set[,2],type = "scatter",mode = "markers",marker = list(symbol = "circles"),name = "All Data",width = 900, height = 700) 
       }
       else {
-        p<-plot_ly(x=set[,1],y=set[,2],z=set[,3],type = "scatter3d",name = "All Data",width = 900, height = 700) 
+        p<-plot_ly(x=set[,1],y=set[,2],z=set[,3],type = "scatter3d",mode = "markers",marker = list(symbol = "circles"),name = "All Data",width = 900, height = 700) 
       }
       return(p)
     }
