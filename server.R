@@ -58,7 +58,7 @@ shinyServer(
       pca2 <- pcaraw2$x
       pca4<-cbind(pca2,subsetfilea2[,c(1,3,5)])
       ds <-screePlot(pcaraw2)
-      p<-plot_ly(x=pca4[,1],y=pca4[,2],type = "scatter",mode = "markers",marker = list(symbol = "circles") name = "All Data",text=paste(" D:",pca4[,588]," S:",pca4[,589]," T:",pca4[,590]), hoverinfo="text",width = 900, height = 700) 
+      p<-plot_ly(x=pca4[,1],y=pca4[,2],type = "scatter",mode = "markers",marker = list(symbol = "circles"), name = "All Data",text=paste(" D:",pca4[,588]," S:",pca4[,589]," T:",pca4[,590]), hoverinfo="text",width = 900, height = 700) 
       output$plot1<-renderPlotly({p})
       output$plot2 <- renderPlotly({ds})
     }
