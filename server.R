@@ -342,19 +342,36 @@ shinyServer(
       
     })
     observeEvent(input$go, {
-      k<-setupPlot(input$dimension,pcaPlot(input$center,input$scale))
+      tsneout<<-pcaPlot(input$center,input$scale)
+      k<-setupPlot(input$dimension,tsneout)
       output$plot2 <-renderPlotly({screePlot(pcaorig)})
       output$plot1<-renderPlotly({k})
     })
     observeEvent(input$go2, {
-      k<-setupPlot(input$dimension,tsnePlot(FALSE,input$perplexity,input$iterations,input$lr))
+      tsneout<<- tsnePlot(FALSE,input$perplexity,input$iterations,input$lr)
+      k<-setupPlot(input$dimension,tsneout)
       output$plot1<-renderPlotly({k})
       
     })
     observeEvent(input$go3, {
-      k<-setupPlot(input$dimension,tsnePlotM(TRUE,input$perplexity,input$iterations,input$center,input$scale,input$pcadims,input$lr))
+      tsneout <<- tsnePlotM(TRUE,input$perplexity,input$iterations,input$center,input$scale,input$pcadims,input$lr)
+      k<-setupPlot(input$dimension,tsneout)
       output$plot1<-renderPlotly({k})
       
+    })
+    observeEvent(list(input$go,input$go2,input$go3),{
+      output$kmeansbutton <- renderUI({
+        actionButton("km" ,"K-means",class = "btn btn-primary")
+      })
+    })
+    observeEvent(input$km,{
+      original_tsne <<- as.data.frame(tsneout[,1:3])
+      fit_cluster_kmeans=kmeans(scale(original_tsne), 3)  
+      original_tsne$cl_kmeans = factor(fit_cluster_kmeans$cluster)
+      
+      plot_k <- plot_ly(data = original_tsne, x = original_tsne[,1], y = original_tsne[,2],z=original_tsne[,3], color = ~cl_kmeans, colors = "Set1")
+   
+      output$plotk<-renderPlotly({plot_k})
     })
     
   })

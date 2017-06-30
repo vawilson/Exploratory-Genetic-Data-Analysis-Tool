@@ -10,7 +10,8 @@ shinyUI(fluidPage(
       actionButton("upload" ,"Upload File",class = "btn btn-primary"),
       uiOutput("data"),
       uiOutput("data2"),
-      uiOutput("param")
+      uiOutput("param"),
+      uiOutput("kmeansbutton")
       ),
     
   mainPanel(
@@ -25,8 +26,8 @@ shinyUI(fluidPage(
    
     tabsetPanel( 
       tabPanel("PCA",plotlyOutput("plot1")),
-      tabPanel("Scree Plot",plotlyOutput("plot2"))
-      
+      tabPanel("Scree Plot",plotlyOutput("plot2")),
+      tabPanel("K-Means",plotlyOutput("plotk"))
     )
   
   )
