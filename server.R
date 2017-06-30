@@ -163,15 +163,15 @@ shinyServer(
       pca3<-cbind(pca,subsetfilea[,c(1,3,5)])
       return(pca3)
     }
-    tsnePlot <- function(pc,pe,it){
-      tsneplot <- Rtsne(subsetgenes,verbose = TRUE, max_iter = it,pca = pc,perplexity = pe, dims =3)
+    tsnePlot <- function(pc,pe,it,lr){
+      tsneplot <- Rtsne(subsetgenes,verbose = TRUE, max_iter = it,pca = pc,perplexity = pe, dims =3, eta = lr)
       output$error <- renderText(paste("Cost: ",tail(tsneplot$itercosts,n=1)))
      tsne2<-cbind(tsneplot$Y,subsetfilea[,c(1,3,5)])
      
       return(tsne2)
     }
-    tsnePlotM <- function(pc,pe,it,c,s,pdim){
-      tsneplot <- Rtsne(subsetgenes,verbose = TRUE, max_iter = it,pca = pc,perplexity = pe, dims =3,pca_center = c, pca_scale = s, initial_dims = pdim)
+    tsnePlotM <- function(pc,pe,it,c,s,pdim,lr){
+      tsneplot <- Rtsne(subsetgenes,verbose = TRUE, max_iter = it,pca = pc,perplexity = pe, dims =3,pca_center = c, pca_scale = s, initial_dims = pdim,eta = lr)
       output$error <- renderText(paste("Cost: ",tail(tsneplot$itercosts,n=1)))
       tsne2<-cbind(tsneplot$Y,subsetfilea[,c(1,3,5)])
       return(tsne2)
@@ -316,6 +316,7 @@ shinyServer(
           tagList(
             sliderInput("perplexity", label = "Perplexity", min = 5, max = 100, value = 50),
             sliderInput("iterations", label = "Iterations", min = 1, max = 20000, value = 50),
+            sliderInput("lr", label = "t-SNE:Learning Rate", min = 100, max = 1000, value = 200), 
             actionButton("go2" ,"Go!",class = "btn btn-primary")
     )
         })
@@ -329,6 +330,7 @@ shinyServer(
             checkboxInput("center", label = "PCA:Center", value = TRUE),
             sliderInput("perplexity", label = "t-SNE:Perplexity", min = 5, max = 100, value = 50),
             sliderInput("iterations", label = "t-SNE:Iterations", min = 1, max = 20000, value = 50),  
+            sliderInput("lr", label = "t-SNE:Learning Rate", min = 100, max = 1000, value = 200), 
           actionButton("go3" ,"Go!",class = "btn btn-primary")
           )
         })
@@ -345,12 +347,12 @@ shinyServer(
       output$plot1<-renderPlotly({k})
     })
     observeEvent(input$go2, {
-      k<-setupPlot(input$dimension,tsnePlot(FALSE,input$perplexity,input$iterations))
+      k<-setupPlot(input$dimension,tsnePlot(FALSE,input$perplexity,input$iterations,input$lr))
       output$plot1<-renderPlotly({k})
       
     })
     observeEvent(input$go3, {
-      k<-setupPlot(input$dimension,tsnePlotM(TRUE,input$perplexity,input$iterations,input$center,input$scale,input$pcadims))
+      k<-setupPlot(input$dimension,tsnePlotM(TRUE,input$perplexity,input$iterations,input$center,input$scale,input$pcadims,input$lr))
       output$plot1<-renderPlotly({k})
       
     })
