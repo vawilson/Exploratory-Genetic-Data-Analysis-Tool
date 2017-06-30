@@ -366,10 +366,10 @@ shinyServer(
     })
     observeEvent(input$km,{
       original_tsne <<- as.data.frame(tsneout[,1:3])
-      fit_cluster_kmeans=kmeans(scale(original_tsne), 3)  
+      fit_cluster_kmeans=kmeans(scale(original_tsne), 35)  
       original_tsne$cl_kmeans = factor(fit_cluster_kmeans$cluster)
       
-      plot_k <- plot_ly(data = original_tsne, x = original_tsne[,1], y = original_tsne[,2],z=original_tsne[,3], color = ~cl_kmeans, colors = "Set1")
+      plot_k <- plot_ly(data = original_tsne, x = original_tsne[,1], y = original_tsne[,2],z=original_tsne[,3],type = "scatter3d",mode = "markers",marker = list(symbol = "circles"), color = ~cl_kmeans, colors = "Set1")
    
       output$plotk<-renderPlotly({plot_k})
     })
