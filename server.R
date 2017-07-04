@@ -272,7 +272,7 @@ shinyServer(
     #' @param dim the dimension to be plotted in
     #'
     #' @return a plot of the pca without any traces
-
+    
     setupPlot <- function(dim,plot){
       set<<-plot
       
@@ -301,6 +301,7 @@ shinyServer(
     observeEvent(input$select, {
       subsetData(input$donor, input$stimulus, input$timepoint)
     })
+    #params for only pca
     observeEvent(input$submit, {
       if(input$pca & !input$tsne){
         output$param <- renderUI({
@@ -311,6 +312,7 @@ shinyServer(
           )
         })
       } 
+      #params for only tsne
       else if(input$tsne & !input$pca){
         output$param <- renderUI({
           tagList(
@@ -322,6 +324,7 @@ shinyServer(
         })
         
       }
+      #params for tsne and pca
       else if(input$tsne & input$pca){
         output$param <- renderUI({
           tagList(
@@ -341,29 +344,35 @@ shinyServer(
       
       
     })
-    observeEvent(input$go, {
+    observeEvent(
+      #go go pca only
+      input$go, {
       tsneout<<-pcaPlot(input$center,input$scale)
       k<-setupPlot(input$dimension,tsneout)
       output$plot2 <-renderPlotly({screePlot(pcaorig)})
       output$plot1<-renderPlotly({k})
     })
+    #go for tsne only
     observeEvent(input$go2, {
       tsneout<<- tsnePlot(FALSE,input$perplexity,input$iterations,input$lr)
       k<-setupPlot(input$dimension,tsneout)
       output$plot1<-renderPlotly({k})
       
     })
+    #go for pca and tsne
     observeEvent(input$go3, {
       tsneout <<- tsnePlotM(TRUE,input$perplexity,input$iterations,input$center,input$scale,input$pcadims,input$lr)
       k<-setupPlot(input$dimension,tsneout)
       output$plot1<-renderPlotly({k})
       
     })
+    #buttonfor kmeans
     observeEvent(list(input$go,input$go2,input$go3),{
       output$kmeansbutton <- renderUI({
         actionButton("km" ,"K-means",class = "btn btn-primary")
       })
     })
+    #runs kmeans and creates the plot for kmeans
     observeEvent(input$km,{
       original_tsne <<- as.data.frame(tsneout[,1:3])
       fit_cluster_kmeans=kmeans(scale(original_tsne), 35)  
