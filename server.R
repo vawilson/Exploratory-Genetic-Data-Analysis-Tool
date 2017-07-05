@@ -72,6 +72,7 @@ shinyServer(
         filea <<- parseFile(input$datainput,input$filetype,headerstate = input$checkboxes)
       })
     })
+   
     
     #
 #' Parse File Function
@@ -88,6 +89,7 @@ shinyServer(
       #cannot directly access a file, must first find it's file path
       file<-datafile$datapath
       #parse a tab seperated file
+    
       if(delim=="Tabs") {
         return(read.csv(file,header = !(is.null(headerstate[1])),sep = "\t", stringsAsFactors=FALSE))
       }
@@ -95,14 +97,32 @@ shinyServer(
       if(delim == "Comma") {
         return(read.csv(file,header = !(is.null(headerstate[1])), stringsAsFactors=FALSE))
       }
+     
       #output error message if delimanator type not accepted
       else{
         textOutput("Error: Deliminator type not supported.")
       }
     }
+    #getInteractions() <- function(stims){
+      #compiles a vector with the interactions of the inputted vector of stims
+    #}
+    observeEvent(input$stimulus,{
+      if(input$datatype == "Processed"){
+      #updateSelectizeInput(session,"stimulus2",choices = getInteractions(input$stimulus))
+      }
+    })
     #when submit button is pressed and data is loaded, more options appear
+    loadNames <- function(){
+      pathtable <<- "./data/correspondancetable.txt"
+      nametable<<-read.csv(pathtable,header=F,sep="\t")
+      st <<-unique(nametable[,1])
+      names(st) <<- nametable[,2]
+    }
+    observeEvent(input$upload, {
     output$data <- renderUI({ 
-      input$upload
+      loadNames()
+      print(st)
+      if(input$datatype == "Raw"){
       tagList(
         isolate(
           selectizeInput("donor",label = "Select Donor:", choices = unique(filea[1]), selected = as.character(unique(filea[1])$Donor),
@@ -110,7 +130,7 @@ shinyServer(
           )
         ),
         isolate(
-          selectizeInput("stimulus", label = "Select Stimulus:", choices  = unique(filea[3]), selected = as.character(unique(filea[3])$StimulusName),
+          selectizeInput("stimulus", label = "Select Stimulus:", choices  = st, selected = st,
                          multiple = TRUE, options = list()
           )
         ),
@@ -122,12 +142,44 @@ shinyServer(
         isolate(
           actionButton("select" ,"Select",class = "btn btn-primary")
         )
-        
-       
       )
+      }
+      else{
+        tagList(
+          isolate(
+            selectizeInput("donor",label = "Select Donor:", choices = unique(filea[1]), selected = as.character(unique(filea[1])$Donor),
+                           multiple = TRUE, options = list()
+            )
+          ),
+          isolate(
+            # is all as.character(unique(filea[3])$Stimulus)
+            selectizeInput("stimulus", label = "Select Stimulus:", choices  = unique(filea[3]), selected = c(),
+                           multiple = TRUE, options = list()
+            )
+          ),
+          isolate(
+            selectizeInput("stimulus2", label = "Select Second Stimulus:", choices  = c(),
+                           multiple = TRUE, options = list()
+            )
+          ),
+          isolate(
+            selectizeInput("timepoint", label = "Select Timepoint:", choices  = unique(filea[5]), selected = "22",
+                           multiple = TRUE, options = list()
+            )
+          ),
+          isolate(
+            actionButton("select" ,"Select",class = "btn btn-primary")
+          )
+          
+          
+        )
+        
+      }
     })
+    })
+    observeEvent(input$select, {
     output$data2 <- renderUI({ 
-      input$select
+      
       tagList(
         isolate(
           checkboxInput("pca", label = "PCA", value = TRUE)
@@ -143,6 +195,9 @@ shinyServer(
         )
         
       )
+      
+      
+    })
     })
     
     #' PCA Plot Function
@@ -154,8 +209,10 @@ shinyServer(
     #' @return a datatable of the pca dimensions for each set of donor, simulus, and timepoints
     #'
    subsetData <- function(don,stim,tim){
-     subsetfilea <<- subset(filea,Donor %in% don & StimulusName %in% stim & Timepoint %in% tim)
-     subsetgenes <<- subsetfilea[,6:592]
+    
+     subsetfilea <<- subset(filea,Donor %in% don & Stimulus %in% stim & Timepoint %in% tim)
+     #subsetfilea[,6:592]
+     subsetgenes <<- subsetfilea[,6:104]
    }
     pcaPlot <- function(c,s){
       pcaorig <<- (prcomp(subsetgenes, center = c, scale. = s))
@@ -224,14 +281,14 @@ shinyServer(
         
         for(i in 1:length(stim)){
           
-          p<-add_trace(p,x=subset(set,StimulusName==stim[i])[,1],y=subset(set,StimulusName==stim[i])[,2],marker = list(color = c[i]), name = stim[i],evaulate = TRUE)
+          p<-add_trace(p,x=subset(set,Stimulus==stim[i])[,1],y=subset(set,Stimulus==stim[i])[,2],marker = list(color = c[i]), name = stim[i],evaulate = TRUE)
         }
       }
       else {
         p<-plot_ly(x=set[,1],y=set[,2],z=set[,3],type = "scatter3d",mode = "markers",marker = list(symbol = "circles"),name = "All Data",width = 900, height = 700) 
         for(i in 1:length(stim)){
           
-          p<-add_trace(p,x=subset(set,StimulusName==stim[i])[,1],y=subset(set,StimulusName==stim[i])[,2],z=subset(set,StimulusName==stim[i])[,3],marker = list(color = c[i]), name = stim[i])
+          p<-add_trace(p,x=subset(set,Stimulus==stim[i])[,1],y=subset(set,Stimulus==stim[i])[,2],z=subset(set,Stimulus==stim[i])[,3],marker = list(color = c[i]), name = stim[i])
           
         }
       }
