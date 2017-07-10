@@ -7,7 +7,7 @@ shinyUI(fluidPage(
       fileInput("datainput", label = "Input your data:"),
       selectInput("filetype", label = "Select file type:", choices  = c("Comma","Tabs"), selected = "Tabs"),
       selectInput("datatype", label = "Select data type:", choices  = c("Raw","Processed"), selected = "Raw"),
-      checkboxGroupInput("checkboxes",label = "", choices  = c("Contains Header") ,selected = TRUE),
+      checkboxInput("checkboxes",label = "Contains Header", value = T),
       
       actionButton("upload" ,"Upload File",class = "btn btn-primary"),
       uiOutput("data"),
@@ -15,7 +15,6 @@ shinyUI(fluidPage(
       uiOutput("param"),
       uiOutput("kmeansbutton")
       ),
-    
   mainPanel(
     fluidRow(
       db <- actionButton("donorbutton" ,"Donors",class = "btn btn-primary"),
