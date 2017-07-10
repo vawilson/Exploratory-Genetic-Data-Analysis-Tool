@@ -247,20 +247,20 @@ shinyServer(
               pcaPlot <- function(c,s){
                 pcaorig <<- (prcomp(subsetgenes, center = c, scale. = s))
                 pca <- pcaorig$x
-                pca3<-cbind(pca,subsetfilea[,c(1,3,5)])
+                pca3<-cbind(pca,subsetfilea[,c(1,2,5)])
                 return(pca3)
               }
               tsnePlot <- function(pc,pe,it,lr){
                 tsneplot <- Rtsne(subsetgenes,verbose = TRUE, max_iter = it,pca = pc,perplexity = pe, dims =3, eta = lr)
                 output$error <- renderText(paste("Cost: ",tail(tsneplot$itercosts,n=1)))
-                tsne2<-cbind(tsneplot$Y,subsetfilea[,c(1,3,5)])
+                tsne2<-cbind(tsneplot$Y,subsetfilea[,c(1,2,5)])
                 
                 return(tsne2)
               }
               tsnePlotM <- function(pc,pe,it,c,s,pdim,lr){
                 tsneplot <- Rtsne(subsetgenes,verbose = TRUE, max_iter = it,pca = pc,perplexity = pe, dims =3,pca_center = c, pca_scale = s, initial_dims = pdim,eta = lr)
                 output$error <- renderText(paste("Cost: ",tail(tsneplot$itercosts,n=1)))
-                tsne2<-cbind(tsneplot$Y,subsetfilea[,c(1,3,5)])
+                tsne2<-cbind(tsneplot$Y,subsetfilea[,c(1,2,5)])
                 return(tsne2)
               }
               #' Setup Plot Donor Function
@@ -377,7 +377,12 @@ shinyServer(
                 output$plot1<-renderPlotly({k})
               })
               observeEvent(input$stimulusbutton, {
+                if(input$datatype == "Raw"){
                 k<-setupPlotStim(input$donor, input$stimulus, input$timepoint,input$dimension)
+                }
+                else{
+                  k<-setupPlotStim(input$donor, input$stimulus2, input$timepoint,input$dimension)
+                }
                 output$plot1<-renderPlotly({k})
               })
               observeEvent(input$timebutton, {
