@@ -245,22 +245,40 @@ shinyServer(
                 
               }
               pcaPlot <- function(c,s){
+                
                 pcaorig <<- (prcomp(subsetgenes, center = c, scale. = s))
                 pca <- pcaorig$x
+                if(input$datatype == "Raw"){
                 pca3<-cbind(pca,subsetfilea[,c(1,2,5)])
+                }
+                else{
+                  pca3<-cbind(pca,subsetfilea[,c(1,3,4,5)])
+                }
                 return(pca3)
               }
               tsnePlot <- function(pc,pe,it,lr){
                 tsneplot <- Rtsne(subsetgenes,verbose = TRUE, max_iter = it,pca = pc,perplexity = pe, dims =3, eta = lr)
                 output$error <- renderText(paste("Cost: ",tail(tsneplot$itercosts,n=1)))
-                tsne2<-cbind(tsneplot$Y,subsetfilea[,c(1,2,5)])
+                
+                if(input$datatype == "Raw"){
+                  tsne2<-cbind(tsneplot$Y,subsetfilea[,c(1,2,5)])
+                }
+                else{
+                  tsne2<-cbind(tsneplot$Y,subsetfilea[,c(1,3,4,5)])
+                }
                 
                 return(tsne2)
               }
               tsnePlotM <- function(pc,pe,it,c,s,pdim,lr){
                 tsneplot <- Rtsne(subsetgenes,verbose = TRUE, max_iter = it,pca = pc,perplexity = pe, dims =3,pca_center = c, pca_scale = s, initial_dims = pdim,eta = lr)
                 output$error <- renderText(paste("Cost: ",tail(tsneplot$itercosts,n=1)))
-                tsne2<-cbind(tsneplot$Y,subsetfilea[,c(1,2,5)])
+                
+                if(input$datatype == "Raw"){
+                  tsne2<-cbind(tsneplot$Y,subsetfilea[,c(1,2,5)])
+                }
+                else{
+                  tsne2<-cbind(tsneplot$Y,subsetfilea[,c(1,3,4,5)])
+                }
                 return(tsne2)
               }
               #' Setup Plot Donor Function
@@ -303,6 +321,7 @@ shinyServer(
               #' @return a plot of the pca with traces for each stimulus
               
               setupPlotStim <- function(don,stim,tim,dim){
+                if(input$datatype == "Raw"){
                 c <- distinctColorPalette(length(stim))
                 
                 
@@ -310,7 +329,7 @@ shinyServer(
                   p<-plot_ly(x=set[,1],y=set[,2],type = "scatter",mode = "markers",marker = list(symbol = "circles"),width = 900, height = 700) 
                   
                   for(i in 1:length(stim)){
-                    
+                   
                     p<-add_trace(p,x=subset(set,Stimulus==stim[i])[,1],y=subset(set,Stimulus==stim[i])[,2],marker = list(color = c[i]), name = stim[i],evaulate = TRUE)
                   }
                 }
@@ -320,6 +339,33 @@ shinyServer(
                     
                     p<-add_trace(p,x=subset(set,Stimulus==stim[i])[,1],y=subset(set,Stimulus==stim[i])[,2],z=subset(set,Stimulus==stim[i])[,3],marker = list(color = c[i]), name = stim[i])
                     
+                  }
+                }
+                
+                }
+                else{
+                  stims <- parseStim(stim)
+
+                 stim<-unique(c(as.vector(stims[,1]),as.vector(stims[,2])))
+                  c <- distinctColorPalette(length(stim))
+                
+                  if(dim == "2D"){
+                    p<-plot_ly(x=set[,1],y=set[,2],type = "scatter",mode = "markers",marker = list(symbol = "circles"),width = 900, height = 700) 
+                    
+                    for(i in 1:length(stim)){
+                      
+                     
+                      p<-add_trace(p,x=subset(set,Stimulus==stim[i]| Stimulus2 == stim[i])[,1],y=subset(set,Stimulus==stim[i]| Stimulus2 == stim[i])[,2],marker = list(color = c[i]), name = nametable[as.integer(stim[i])-8,2],evaulate = TRUE)
+                    }
+                  }
+                  else {
+                    p<-plot_ly(x=set[,1],y=set[,2],z=set[,3],type = "scatter3d",mode = "markers",marker = list(symbol = "circles"),name = "All Data",width = 900, height = 700) 
+                    for(i in 1:length(stim)){
+                      
+                      p<-add_trace(p,x=subset(set,Stimulus==stim[i]| Stimulus2 == stim[i])[,1],y=subset(set,Stimulus==stim[i]| Stimulus2 == stim[i])[,2],z=subset(set,Stimulus==stim[i]| Stimulus2 == stim[i])[,3],marker = list(color = c[i]), name = nametable[as.integer(stim[i])-8,2])
+                      
+                    }
+                  
                   }
                 }
                 return(p)
