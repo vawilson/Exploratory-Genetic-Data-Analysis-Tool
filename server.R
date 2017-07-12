@@ -110,11 +110,12 @@ shinyServer(
                 return(thing)
               }
               mappedV <- function(vector){
-                stimuli <- c("Null","C12IEDAP","aCD3aCD28","aCD3aCD28+IFNa","CPPD","Gardiqiumod","FLA","FSL","HKCandida","HKEcoli",
+                stimuli <- c("ATP","LPS+ATP","LPSlow","Null","C12IEDAP","aCD3aCD28","aCD3aCD28+IFNa","CPPD","Gardiqiumod","FLA","FSL","HKCandida","HKEcoli",
                              "HKHpylori","HKLactobac","HKStaphaur","IFNb","IFNg","IL1b","IL1b+TNFa","IL23","Influenza","IFNa","LPS+IFNa",
                              "Lipoarabinomannan","LPS","BCG","ODN","LPS+ODN","PolyIC","R848","SEB","Sendai","TNFa","Dectin")
-                map <- setNames(stimuli, c(9:40))
-                return(map[vector-8])
+                map <- data.frame()
+                map[ c(2,3,8,9:40),1]<- stimuli
+                return(map[vector,1])
               }
               observeEvent(input$stimulus,{
                 if(input$datatype == "Processed"){
@@ -129,9 +130,11 @@ shinyServer(
               loadNames <- function(){
                 pathtable <<- "./data/correspondancetable.txt"
                 nametable<<-read.csv(pathtable,header=F,sep="\t")
-                st <<-unique(nametable[,1])
-                names(st) <<- unique(nametable[,2])
+                st <-unique(nametable[,1])
+                names(st) <- unique(nametable[,2])
                 
+                nt <<- data.frame()
+                nt[nametable[,1],1]<<-nametable[,2]
               }
               observeEvent(input$upload, {
                 output$data <- renderUI({ 
@@ -342,20 +345,20 @@ shinyServer(
                 if(input$datatype == "Raw"){
                 c <- distinctColorPalette(length(stim))
                 
-                
+                print(stim)
                 if(dim == "2D"){
                   p<-plot_ly(x=set[,1],y=set[,2],type = "scatter",mode = "markers",marker = list(symbol = "circles"),width = 900, height = 700) 
                   
                   for(i in 1:length(stim)){
                    
-                    p<-add_trace(p,x=subset(set,Stimulus==stim[i])[,1],y=subset(set,Stimulus==stim[i])[,2],marker = list(color = c[i]), name = stim[i],evaulate = TRUE)
+                    p<-add_trace(p,x=subset(set,Stimulus==stim[i])[,1],y=subset(set,Stimulus==stim[i])[,2],marker = list(color = c[i]), name = nt[as.integer(stim[i]),1],evaulate = TRUE)
                   }
                 }
                 else {
                   p<-plot_ly(x=set[,1],y=set[,2],z=set[,3],type = "scatter3d",mode = "markers",marker = list(symbol = "circles"),name = "All Data",width = 900, height = 700) 
                   for(i in 1:length(stim)){
                     
-                    p<-add_trace(p,x=subset(set,Stimulus==stim[i])[,1],y=subset(set,Stimulus==stim[i])[,2],z=subset(set,Stimulus==stim[i])[,3],marker = list(color = c[i]), name = stim[i])
+                    p<-add_trace(p,x=subset(set,Stimulus==stim[i])[,1],y=subset(set,Stimulus==stim[i])[,2],z=subset(set,Stimulus==stim[i])[,3],marker = list(color = c[i]), name = nt[as.integer(stim[i]),1])
                     
                   }
                 }
@@ -373,14 +376,14 @@ shinyServer(
                     for(i in 1:length(stim)){
                       
                      
-                      p<-add_trace(p,x=subset(set,Stimulus==stim[i]| Stimulus2 == stim[i])[,1],y=subset(set,Stimulus==stim[i]| Stimulus2 == stim[i])[,2],marker = list(color = c[i]), name = nametable[as.integer(stim[i])-8,2],evaulate = TRUE)
+                      p<-add_trace(p,x=subset(set,Stimulus==stim[i]| Stimulus2 == stim[i])[,1],y=subset(set,Stimulus==stim[i]| Stimulus2 == stim[i])[,2],marker = list(color = c[i]), name = nt[as.integer(stim[i]),1],evaulate = TRUE)
                     }
                   }
                   else {
                     p<-plot_ly(x=set[,1],y=set[,2],z=set[,3],type = "scatter3d",mode = "markers",marker = list(symbol = "circles"),name = "All Data",width = 900, height = 700) 
                     for(i in 1:length(stim)){
                       
-                      p<-add_trace(p,x=subset(set,Stimulus==stim[i]| Stimulus2 == stim[i])[,1],y=subset(set,Stimulus==stim[i]| Stimulus2 == stim[i])[,2],z=subset(set,Stimulus==stim[i]| Stimulus2 == stim[i])[,3],marker = list(color = c[i]), name = nametable[as.integer(stim[i])-8,2])
+                      p<-add_trace(p,x=subset(set,Stimulus==stim[i]| Stimulus2 == stim[i])[,1],y=subset(set,Stimulus==stim[i]| Stimulus2 == stim[i])[,2],z=subset(set,Stimulus==stim[i]| Stimulus2 == stim[i])[,3],marker = list(color = c[i]), name = nt[as.integer(stim[i]),1])
                       
                     }
                   
@@ -456,6 +459,7 @@ shinyServer(
               
               observeEvent(input$select, {
                 if(input$datatype == "Raw"){
+                
                   subsetData(input$donor, input$stimulus, input$timepoint)
                 }
                 else{
