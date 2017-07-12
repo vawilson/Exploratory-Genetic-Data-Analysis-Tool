@@ -294,11 +294,29 @@ shinyServer(
                 c <- distinctColorPalette(length(don))
                 
                 if(dim == "2D"){
-                  p<-plot_ly(x=set[,1],y=set[,2],type = "scatter",mode = "markers",marker = list(symbol = "circles"),name = "All Data",width = 900, height = 700) 
+                  d <- set[["Donor"]]
+                  s <- mappedV(set[["Stimulus"]])
+                  s2 <- mappedV(set[["Stimulus2"]])
+                  t <- set[["Timepoint"]]
+                  text <- paste(d,s,s2,t)
+                  p<-plot_ly(x=set[,1],
+                             y=set[,2],
+                             type = "scatter", mode = "markers",
+                             marker = list(symbol = "circles"),
+                             text = text, hoverinfo = "text",
+                             name = "All Data",
+                             width = 900, height = 700) 
                   
                   for(i in 1:length(don)){
-                    p<-add_trace(p,type = "scatter",x=subset(set,Donor==don[i])[,1],y=subset(set,Donor==don[i])[,2],marker = list(color = c[i]),name = don[i])
-                    
+                    texti <- text[d==don[i]]
+                    p<-add_trace(p,
+                                 x=subset(set,Donor==don[i])[,1],
+                                 y=subset(set,Donor==don[i])[,2],
+                                 type = "scatter", mode = "markers",
+                                 marker = list(color = c[i]),
+                                 text = texti, hoverinfo = "text",
+                                 name = don[i],
+                                 inherit = FALSE)
                   }
                 }
                 else {
