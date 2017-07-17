@@ -35,7 +35,7 @@ shinyServer(
               
               screePlot <- function(pcaraw){
                 prop <- pcaraw$sdev^2 / sum(pcaraw$sdev^2)
-                s <- plot_ly(y = prop[1:100],width = 900, height = 700,
+                s <- plot_ly(y = prop[1:100],width = 1200, height = 700,
                              type = 'bar',
                              name = "proportion of variance") %>%
                   layout(title = "")
@@ -58,7 +58,7 @@ shinyServer(
                 pca2 <- pcaraw2$x
                 pca4<-cbind(pca2,subsetfilea2[,c(1,3,5)])
                 ds <-screePlot(pcaraw2)
-                p<-plot_ly(x=pca4[,1],y=pca4[,2],type = "scatter",mode = "markers",marker = list(symbol = "circles"), name = "All Data",text=paste(" D:",pca4[,588]," S:",pca4[,589]," T:",pca4[,590]), hoverinfo="text",width = 900, height = 700) 
+                p<-plot_ly(x=pca4[,1],y=pca4[,2],type = "scatter",mode = "markers",marker = list(symbol = "circles"), name = "All Data",text=paste(" D:",pca4[,588]," S:",pca4[,589]," T:",pca4[,590]), hoverinfo="text",width = 1200, height = 700) 
                 output$plot1<-renderPlotly({p})
                 output$plot2 <- renderPlotly({ds})
               }
@@ -308,7 +308,7 @@ shinyServer(
                              marker = list(symbol = "circles"),
                              text = text, hoverinfo = "text",
                              name = "All Data",
-                             width = 900, height = 700) 
+                             width = 1200, height = 700) 
                   
                   for(i in 1:length(don)){
                     texti <- text[d==don[i]]
@@ -323,7 +323,7 @@ shinyServer(
                   }
                 }
                 else {
-                  p<-plot_ly(x=set[,1],y=set[,2],z=set[,3],type = "scatter3d",mode = "markers",marker = list(symbol = "circles"),name = "All Data",width = 900, height = 700) 
+                  p<-plot_ly(x=set[,1],y=set[,2],z=set[,3],type = "scatter3d",mode = "markers",marker = list(symbol = "circles"),name = "All Data",width = 1200, height = 700) 
                   for(i in 1:length(don)){
                     p<-add_trace(p,x=subset(set,Donor==don[i])[,1],y=subset(set,Donor==don[i])[,2],z=subset(set,Donor==don[i])[,3],marker = list(color = c[i]),name = don[i])
                   }
@@ -347,7 +347,7 @@ shinyServer(
                 
                 print(stim)
                 if(dim == "2D"){
-                  p<-plot_ly(x=set[,1],y=set[,2],type = "scatter",mode = "markers",marker = list(symbol = "circles"),width = 900, height = 700) 
+                  p<-plot_ly(x=set[,1],y=set[,2],type = "scatter",mode = "markers",marker = list(symbol = "circles"),width = 1200, height = 700) 
                   
                   for(i in 1:length(stim)){
                    
@@ -355,7 +355,7 @@ shinyServer(
                   }
                 }
                 else {
-                  p<-plot_ly(x=set[,1],y=set[,2],z=set[,3],type = "scatter3d",mode = "markers",marker = list(symbol = "circles"),name = "All Data",width = 900, height = 700) 
+                  p<-plot_ly(x=set[,1],y=set[,2],z=set[,3],type = "scatter3d",mode = "markers",marker = list(symbol = "circles"),name = "All Data",width = 1200, height = 700) 
                   for(i in 1:length(stim)){
                     
                     p<-add_trace(p,x=subset(set,Stimulus==stim[i])[,1],y=subset(set,Stimulus==stim[i])[,2],z=subset(set,Stimulus==stim[i])[,3],marker = list(color = c[i]), name = nt[as.integer(stim[i]),1])
@@ -371,7 +371,7 @@ shinyServer(
                   c <- distinctColorPalette(length(stim))
                 
                   if(dim == "2D"){
-                    p<-plot_ly(x=set[,1],y=set[,2],type = "scatter",mode = "markers",marker = list(symbol = "circles"),width = 900, height = 700) 
+                    p<-plot_ly(x=set[,1],y=set[,2],type = "scatter",mode = "markers",marker = list(symbol = "circles"),width = 1200, height = 700) 
                     
                     for(i in 1:length(stim)){
                       
@@ -380,7 +380,7 @@ shinyServer(
                     }
                   }
                   else {
-                    p<-plot_ly(x=set[,1],y=set[,2],z=set[,3],type = "scatter3d",mode = "markers",marker = list(symbol = "circles"),name = "All Data",width = 900, height = 700) 
+                    p<-plot_ly(x=set[,1],y=set[,2],z=set[,3],type = "scatter3d",mode = "markers",marker = list(symbol = "circles"),name = "All Data",width = 1200, height = 700) 
                     for(i in 1:length(stim)){
                       
                       p<-add_trace(p,x=subset(set,Stimulus==stim[i]| Stimulus2 == stim[i])[,1],y=subset(set,Stimulus==stim[i]| Stimulus2 == stim[i])[,2],z=subset(set,Stimulus==stim[i]| Stimulus2 == stim[i])[,3],marker = list(color = c[i]), name = nt[as.integer(stim[i]),1])
@@ -403,13 +403,13 @@ shinyServer(
               setupPlotTime <- function(don,stim,tim,dim){
                 c <- distinctColorPalette(length(tim))
                 if(dim == "2D"){
-                  p<-plot_ly(x=set[,1],y=set[,2],type = "scatter",mode = "markers",marker = list(symbol = "circles"),name = "All Data", name = "All Data",width = 900, height = 700) 
+                  p<-plot_ly(x=set[,1],y=set[,2],type = "scatter",mode = "markers",marker = list(symbol = "circles"),name = "All Data", name = "All Data",width = 1200, height = 700) 
                   for(i in 1:length(tim)){
                     p<-add_trace(p,x=subset(set,Timepoint==tim[i])[,1],y=subset(set,Timepoint==tim[i])[,2],marker = list(color = c[i]), name = tim[i])
                   }
                 }
                 else {
-                  p<-plot_ly(x=set[,1],y=set[,2],z=set[,3],type = "scatter3d", mode = "markers",marker = list(symbol = "circles"),text ="",name = "All Data",width = 900, height = 700) 
+                  p<-plot_ly(x=set[,1],y=set[,2],z=set[,3],type = "scatter3d", mode = "markers",marker = list(symbol = "circles"),text ="",name = "All Data",width = 1200, height = 700) 
                   
                   for(i in 1:length(tim)){
                     p<-add_trace(p,x=subset(set,Timepoint==tim[i])[,1],y=subset(set,Timepoint==tim[i])[,2],z=subset(set,Timepoint==tim[i])[,3], marker = list(color = c[i]), name = tim[i])
@@ -417,7 +417,7 @@ shinyServer(
                 }
                 return(p)
               }
-              
+            
               #' Setup Plot Function
               #'
               #' @param don the selected donors to be plotted (vector)
@@ -431,10 +431,10 @@ shinyServer(
                 set<<-plot
                 
                 if(dim == "2D"){
-                  p<-plot_ly(x=set[,1],y=set[,2],type = "scatter",mode = "markers",marker = list(symbol = "circles"),name = "All Data",width = 900, height = 700) 
+                  p<-plot_ly(x=set[,1],y=set[,2],type = "scatter",mode = "markers",marker = list(symbol = "circles"),name = "All Data",width = 1200, height = 700) 
                 }
                 else {
-                  p<-plot_ly(x=set[,1],y=set[,2],z=set[,3],type = "scatter3d",mode = "markers",marker = list(symbol = "circles"),name = "All Data",width = 900, height = 700) 
+                  p<-plot_ly(x=set[,1],y=set[,2],z=set[,3],type = "scatter3d",mode = "markers",marker = list(symbol = "circles"),name = "All Data",width = 1200, height = 700) 
                 }
                 return(p)
               }
